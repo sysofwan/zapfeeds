@@ -1,0 +1,14 @@
+<html>
+  <head>
+    {% if title %}
+    <title>Aggregator Daddy - {{title}}</title>
+    {% else %}
+    <title>Aggregator Daddy</title>
+    {% endif %}
+  </head>
+  <body>
+    <div><a href="/index">Home</a></div>
+    <hr>
+    {% block content %}{% endblock %}
+  </body>
+</html>
