@@ -20,5 +20,6 @@ class RawContent(db.Model):
 	facebook_likes = db.Column(db.Integer)
 	reddit_upvotes = db.Column(db.Integer)
 	twitter_retweets = db.Column(db.Integer)
+	image_url = db.Column(db.String(2048))
 
 	rankedContent = db.relationship('RankedContent', uselist = False, backref = 'rawContent')

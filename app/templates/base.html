@@ -1,14 +1,23 @@
 <html>
   <head>
     {% if title %}
-    <title>Aggregator Daddy - {{title}}</title>
+    <title>{{title}} - microblog</title>
     {% else %}
-    <title>Aggregator Daddy</title>
+    <title>microblog</title>
     {% endif %}
   </head>
   <body>
-    <div><a href="/index">Home</a></div>
+    <div>Microblog: <a href="/index">Home</a></div>
     <hr>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+    {% for message in messages %}
+        <li>{{ message }} </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
     {% block content %}{% endblock %}
   </body>
 </html>
