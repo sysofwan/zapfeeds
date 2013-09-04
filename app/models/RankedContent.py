@@ -9,4 +9,4 @@ class RankedContent(db.Model):
 	title = db.Column(db.String(140), index = True)
 	description = db.Column(db.String(4096))
 	rank = db.Column(db.Integer, index = True)
-	primary_tag = db.Column(db.Integer, db.ForeignKey('tags.id'), index = True)
+	primary_tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'), index = True)
