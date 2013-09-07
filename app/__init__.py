@@ -6,7 +6,6 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 
 from app import views
-from models.RankedContent import RankedContent
+from models.Content import Content
 from models.User import User
-from models.RawContent import RawContent
-from models.Tag import Tag, TagsContents
+from models.contentMeta import Tag, TagContent, ContentType, SocialShare, SiteName
