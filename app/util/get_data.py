@@ -75,7 +75,12 @@ def requestRssData(url):
 
 def loadDatabse():
 	rssFeeds = ['http://rss.cnn.com/rss/cnn_topstories.rss',
-			'http://feeds.wired.com/wired/index']
+			'http://feeds.gawker.com/lifehacker/full',
+			'http://feeds.wired.com/wired/index',
+			'http://feeds2.feedburner.com/time/topstories',
+			'http://feeds.gawker.com/gizmodo/full',
+			'http://www.theverge.com/rss/frontpage',
+			'http://feeds.feedburner.com/TechCrunch/']
 	for url in rssFeeds:
 		data = requestRssData(url)
 		for content in data:
