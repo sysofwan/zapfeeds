@@ -103,12 +103,16 @@ def getUpvotes(url):
 @sched.interval_schedule(hours=1)
 def loadDatabase():
 	rssFeeds = ['http://rss.cnn.com/rss/cnn_topstories.rss',
+<<<<<<< HEAD
 				'http://feeds.gawker.com/lifehacker/full',
 				'http://feeds.wired.com/wired/index',
 				'http://feeds2.feedburner.com/time/topstories',
 				'http://feeds.gawker.com/gizmodo/full',
 				'http://www.theverge.com/rss/frontpage',
 				'http://feeds.feedburner.com/TechCrunch/']
+=======
+			'http://feeds.wired.com/wired/index']
+>>>>>>> c2d73ebf8a587eeb5e8a2eb75c64b9820ddccc76
 	for url in rssFeeds:
 		data = requestRssData(url)
 		for content in data:
