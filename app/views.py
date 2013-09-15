@@ -1,4 +1,5 @@
-from flask import render_template, flash, redirect, Request
+import os
+from flask import render_template, flash, redirect, send_from_directory
 from app import app
 from forms import LoginForm
 
@@ -30,3 +31,9 @@ def login():
     return render_template('login.html', 
         title = 'Sign In',
         form = form)
+
+@app.route('/favicon.ico')
+def favicon():
+    print "oi!"
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
