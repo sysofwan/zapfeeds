@@ -1,23 +1,23 @@
+<!DOCTYPE html>
 <html>
   <head>
-    {% if title %}
-    <title>{{title}} - microblog</title>
-    {% else %}
-    <title>microblog</title>
-    {% endif %}
+    <div class="container">
+    <title>The Pioneer - Tomorrow's news today</title>
+    <!-- The fly -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    </div>
   </head>
   <body>
+    <div><h1 style="text-align:center">The Pioneer</h1></div>
+    <div class="container">
+
+    <script src="//code.jquery.com/jquery.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
     <div>Microblog: <a href="/index">Home</a></div>
     <hr>
-    {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <ul>
-    {% for message in messages %}
-        <li>{{ message }} </li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-    {% endwith %}
     {% block content %}{% endblock %}
+    </div>
   </body>
 </html>
