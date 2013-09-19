@@ -86,7 +86,7 @@ class SiteName(db.Model):
 	__tablename__ = 'site_names'
 	
 	id = db.Column(db.Integer, primary_key = True)
-	site_name = db.Column(db.String(64), index = True, nullable=False, unique=True)
+	site_name = db.Column(db.String(128), index = True, nullable=False, unique=True)
 
 	contents = db.relationship('Content', backref = 'siteName')
 
