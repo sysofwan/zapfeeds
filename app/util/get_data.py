@@ -97,12 +97,16 @@ def url_content(url_primary,url_secondary=''):
 	data = {}
 	
 	try:
+		#modify imgur url
+		if 'i.imgur.com' in url_primary:
+			url_primary = url_primary[:url_primary.rfind('.')]
+
+		#make the first request
 		pageRequest = requests.get(url_primary)
 
 		#clean url if from not domain name in LEAVE_URL
 		if urlparse(pageRequest.url).netloc in LEAVE_URL:
 			link = pageRequest.url
-			
 		else:
 			#get the cleaner url
 			link = pageRequest.url.split('?')[0]
@@ -135,12 +139,23 @@ def url_content(url_primary,url_secondary=''):
        	data['meta_tags'] = json.dumps(metas)
 
 	#get metadatas and append to dict data
-	meta_data = get_metadata(data['raw_html'],pageRequest)
+	if 'imgur.com' in data['url']:
+		meta_data = get_metadata(url=data['url'])
+	else:
+		meta_data = get_metadata(pageReq=pageRequest)
 	data = dict(data.items() + meta_data.items())
 
 	return data
 
-def get_metadata(page_html='',pageReq='',url=''):
+def get_metadata(url='', pageReq=''):
+	'''
+	REQUIRES: At least url or pageReq parameter provided
+	MODIFIES: None
+	EFFECTS : Returns a dictionary containing attributes; title, description,
+	          type, keywords and image_url if available
+	TODO    : Check if soup has content or value attributes 
+	'''
+
 	data = {}
 
 	#check if enough parameters are passed
@@ -152,24 +167,29 @@ def get_metadata(page_html='',pageReq='',url=''):
                         #print error message
 			print 'cannot open page in get metadata'
 			return data
-	elif page_html and pageReq:
+	elif pageReq:
 		pass
 	else:
 		return data
 
-	soup = BeautifulSoup(page_html)
-	    
+	soup = BeautifulSoup(pageReq.text)
+	
         #find title
 	title = ''
 	title_data1 = soup.find('meta',{'property':'og:title'})
 	title_data2 = soup.find('meta',{'name':'title'})
 	title_data3 = soup.find('meta',{'name':'twitter:title'})
+	title_data4 = soup.find('h2',{'id':'image-title'})
 	if title_data1:
 		title = title_data1.get('content')
 	elif title_data2:
 		title = title_data2.get('content')
 	elif title_data3:
 		title = title_data3.get('content')
+		if 'imgur.com' in url:
+			title = title_data3.get('value')
+	elif title_data4 and 'imgur.com' in url:
+		title = title_data4.text
 	if title: data['title']=title
 		
         #find description
@@ -177,7 +197,9 @@ def get_metadata(page_html='',pageReq='',url=''):
        	desc_data1 = soup.find('meta',{'property':'og:description'})
        	desc_data2 = soup.find('meta',{'name':'description'})
        	desc_data3 = soup.find('meta',{'name':'twitter:description'})
-       	if desc_data1:
+	if 'imgur.com' in url:
+		pass
+       	elif desc_data1:
        		desc = desc_data1.get('content')
        	elif desc_data2:
        		desc = desc_data2.get('content')
@@ -191,12 +213,12 @@ def get_metadata(page_html='',pageReq='',url=''):
 	type_data2 = ''
 	type_data2_temp = pageReq.headers
 	if 'content-type' in type_data2_temp: type_data2=type_data2_temp['content-type']
-	if type_data1:
+	if 'imgur.com' in url:
+		type_id = 'image'
+	elif type_data1:
 		type_id = type_data1.get('content')
 	elif type_data2:
 		type_id = type_data2
-		if 'text' in type_data2: type_id='text'
-		if 'image' in type_data2: type_id='image'
 	if type_id: data['type_id']=type_id
     
         #find keywords
@@ -208,13 +230,18 @@ def get_metadata(page_html='',pageReq='',url=''):
 	if keyword_data2:
 		keywords_temp = keyword_data2.get('content')
 		keywords += ', ' + keywords_temp
+	if 'imgur.com' in url:
+		keywords = ''
 	if keywords: data['meta_tags']=keywords
 
         #find image_url
 	image_url = ''
 	image_data1 = soup.find('meta',{'property':'og:image'})
 	image_data2 = soup.find('meta',{'name':'twitter:image'})
-	if image_data1:
+	image_data3 = soup.find('link',{'rel':'image_src'})
+	if 'imgur.com' in url and image_data3:
+		image_url = image_data3.get('href')
+	elif image_data1:
 		image_url = image_data1.get('content')
 	elif image_data2:
 		image_url = image_data2.get('content')

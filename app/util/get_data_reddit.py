@@ -16,7 +16,7 @@ REDDIT_RSS = ['http://www.reddit.com/r/technology/.rss?limit=100',
 REDDIT_RSS = ['http://www.reddit.com/r/videos/.rss?limit=100']
 
 def rss_data(url):
-    
+
     data = []
     
     #try parse rss feed

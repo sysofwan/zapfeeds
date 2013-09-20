@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+	<div class="row">
+	{% for c in contents %}
+	{% if c.image_url  %}
+		<div class="col-md-4">
+			<h3><strong> {{c.title}} - {{c.id}} </strong></h3>
+			<a href={{c.url}}>
+				<img style="max-height:100%; width:100%;" src={{c.image_url}}>
+			</a>
+			<p>{{c.description}}<p>
+		</div>
+	{% endif %}
+	{% endfor %}
+	</div>
+{% endblock %}
+
+
