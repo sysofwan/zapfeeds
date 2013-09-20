@@ -44,8 +44,9 @@ class Content(db.Model):
 		if 'raw_html' in kargs:
 			content.raw_html = kargs['raw_html']
 		if 'content_type' in kargs:
-			contentType = ContentType.getOrCreateContentType(session, kargs['content_type'])
-			content.type = contentType
+			contentType = ContentType.getContentType(session, kargs['content_type'])
+			if contentType:
+				content.type = contentType
 		if 'site_name' in kargs:
 			siteName = SiteName.getOrCreateSiteName(session, kargs['site_name'])
 			content.siteName = siteName
@@ -60,9 +61,31 @@ class Content(db.Model):
 		session.commit()
 		return content
 
-
 	@classmethod
 	def getContentByLink(cls, session, url):
 		return session.query(cls).filter(cls.url == url).first()
+
+	@classmethod
+	def getFrontPage(cls):
+		return cls.query.order_by(cls.timestamp.desc())[0:32]
+
+	@classmethod
+	def getFrontPageVideos(cls, session):
+		return session.query(Content, ContentType).filter(ContentType.type_string == 'video')\
+				.filter(Content.type_id == ContentType.id).order_by(Content.timestamp.desc())[0:30]
+
+	@classmethod
+	def getFrontPageArticles(cls, session):
+		return session.query(Content, ContentType).filter(ContentType.type_string == 'article')\
+				.filter(Content.type_id == ContentType.id).order_by(Content.timestamp.desc())[0:30]		
+
+	def getFriendlyDescription(self):
+		"""Returns the description, truncated to 300 characters"""
+		if (len(self.title) > 65):
+			return self.description[:120] + '...'
+		return self.description[:200] + '...' if len(self.description) > 200 else self.description
+
+
+
 
 

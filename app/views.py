@@ -2,7 +2,6 @@ import os
 from flask import render_template, flash, redirect, send_from_directory
 from app import app
 from forms import LoginForm
-from util.get_data import requestRssData, loadDatabse, cleanSoupHtml
 from app.models.Content import Content
 
 @app.route('/login', methods = ['GET', 'POST'])
@@ -17,7 +16,7 @@ def login():
 
 @app.route('/')
 def main():
-    contents = Content.query.all()
+    contents = Content.getFrontPage()
     return render_template("main.html", contents = contents)
 
 @app.route('/favicon.ico')

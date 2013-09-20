@@ -5,11 +5,13 @@
 	{% for c in contents %}
 	{% if c.image_url  %}
 		<div class="col-md-4">
-			<h3><strong> {{c.title}} - {{c.id}} </strong></h3>
-			<a href={{c.url}}>
-				<img style="max-height:100%; width:100%;" src={{c.image_url}}>
-			</a>
-			<p>{{c.description}}<p>
+			<div class="img-container">
+				<a href={{c.url}}><img class="content-thumbnail" src={{c.image_url}}></a>
+			</div>
+			<div class="content-container">
+				<h3 class="content-title"><a href={{c.url}}>{{c.title}}</a></h3>
+				<p>{{c.getFriendlyDescription()}}</p>
+			</div>
 		</div>
 	{% endif %}
 	{% endfor %}
