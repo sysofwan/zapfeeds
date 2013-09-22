@@ -7,13 +7,16 @@ from get_data import social_count, url_content
 
 
 REDDIT_RSS = ['http://www.reddit.com/r/news/.rss?limit=100',
-              'http://www.reddit.com/r/worldnews/.rss?limit=100']
+              'http://www.reddit.com/r/news/new/.rss?limit=100',
+              'http://www.reddit.com/r/worldnews/.rss?limit=100',
+              'http://www.reddit.com/r/worldnews/new/.rss?limit=100']
 
-REDDIT_RSS = ['http://www.reddit.com/r/technology/.rss?limit=100',
-              'http://www.reddit.com/r/business/.rss?limit=100',
-              'http://www.reddit.com/r/videos/.rss?limit=100']
-
-REDDIT_RSS = ['http://www.reddit.com/r/videos/.rss?limit=100']
+REDDIT_RSS += ['http://www.reddit.com/r/technology/.rss?limit=100',
+              'http://www.reddit.com/r/business/.rss?limit=100']
+'''
+REDDIT_RSS += ['http://www.reddit.com/r/videos/.rss?limit=100',
+               'http://www.reddit.com/.rss?limit=100']
+'''
 
 def rss_data(url):
 
