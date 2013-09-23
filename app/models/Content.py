@@ -1,7 +1,7 @@
 from app import db
 from time import mktime
 from datetime import datetime
-from contentMeta import ContentType, SiteName, SocialShare
+from contentMeta import ContentType, SiteName, SocialShare, Tag
 
 class Content(db.Model):
 	"""All contents inndexed..."""
@@ -56,6 +56,11 @@ class Content(db.Model):
 			content.text = kargs['text']
 		if 'meta_tags' in kargs:
 			content.meta_tags = kargs['meta_tags']
+		if 'tags' in kargs:
+			tagObjects = []
+			for tag in kargs['tags']:
+				tagObjects += Tag.getOrCreateTag(session, tag)
+			content.tags = tagObjects
 
 		session.add(content)
 		session.commit()

@@ -20,6 +20,7 @@ class Tag(db.Model):
 			return tag
 		tag = cls(tag_string =  tagname)
 		session.add(tag)
+		session.commit()
 		return tag
 
 	@classmethod

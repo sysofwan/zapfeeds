@@ -11,8 +11,6 @@ from urlparse import urlparse
 from boilerpipe.extract import Extractor
 import pickle
 from tagger import Reader,Stemmer,Rater,Tagger
-import unicodedata
-
 
 sched = Scheduler()
 
@@ -148,8 +146,8 @@ def url_content(url_primary,url_secondary=''):
        	soup = cleanSoupHtml(data['raw_html'])
 
        	#array of meta tags
-       	metas = [i.attrs for i in soup('meta')]
-       	data['meta_tags'] = json.dumps(metas)
+       	#metas = [i.attrs for i in soup('meta')]
+       	#data['meta_tags'] = json.dumps(metas)
 
 	#get metadatas and append to dict data
 	if 'imgur.com' in data['url']:
@@ -159,6 +157,8 @@ def url_content(url_primary,url_secondary=''):
 	data = dict(data.items() + meta_data.items())
 
 	
+
+
 	return data
 
 def get_metadata(url='', pageReq=''):
@@ -236,9 +236,7 @@ def get_metadata(url='', pageReq=''):
 		if 'image' in type_data2: type_doc = 'image'
 	if type_doc: data['type']=type_doc
     
-	
         #find keywords
-	data['tags'] = []
 	keywords = ''
 	keyword_data1 = soup.find('meta',{'name':'keywords'})
 	keyword_data2 = soup.find('meta',{'name':'news_keywords'})
@@ -248,13 +246,8 @@ def get_metadata(url='', pageReq=''):
 		keywords = keyword_data2.get('content')
 	if 'imgur.com' in url:
 		keywords = ''
-	if keywords: data['tags']=keywords.split(',')
+	if keywords: data['meta_tags']=keywords
 
-	try:
-		data['tags'] = list(set(data['tags'] + auto_tagger(pageReq.text)))
-	except:
-		pass
-		
         #find image_url
 	image_url = ''
 	image_data1 = soup.find('meta',{'property':'og:image'})
@@ -268,31 +261,38 @@ def get_metadata(url='', pageReq=''):
 		image_url = image_data2.get('content')
 	if image_url: data['image_url']=image_url
 
+	return data
 
+
+
+def auto_tagger(url):
+
+	data = {}
+	
+	try:
+		extractor = Extractor(extractor='ArticleExtractor', url=url)
+	except:
+		print 'In auto_tagger problem opening url: ', url
+		return data
+
+	text_string = extractor.getText()
+	tags = auto_tag(text_string,5)
+	tags_string = ''
+	
+	try:
+		tags_string = ', '.join([ eval(str(tag)) for tag in tags ])
+	except:
+		print 'In auto_tagger, problem converting instance to string'
+		return data
+
+	if tags_string:
+		data['meta_tags'] = tags_string
 
 	return data
 
 
 
-def auto_tagger(raw_html):
 
-	
-	try:
-		extractor = Extractor(extractor='ArticleExtractor', html=raw_html)
-	except:
-		print 'In auto_tagger problem opening url: ', url
-		return data
-	
-	text_string = extractor.getText()
-	text_string = unicodedata.normalize('NFKD', text_string).encode('ascii','ignore')
-
-	try:
-		tags = auto_tag(str(text_string),5)
-	except:
-		return []
-
-	return tags
-	
 	
 def requestRssData(url, google=False, newsvine=False, fark=False):
 	content = feedparser.parse(url)
