@@ -1,21 +1,5 @@
 {% extends "base.html" %}
 
-{% block content %}
-	<div class="row">
-	{% for c in contents %}
-		<div class="col-md-4">
-			<div class="img-container">
-				<a href={{c.url}}><img class="content-thumbnail" src={{c.image_url}}></a>
-			</div>
-			<div class="content-container">
-				<h3 class="content-title"><a href={{c.url}}>{{c.title}}</a></h3>
-				<p>{{c.getFriendlyDescription()}}</p>
-			</div>
-		</div>
-	{% endfor %}
-	</div>
-{% endblock %}
-
 {% block navigation %}
 
 <nav class="navbar navbar-default" role="navigation">
@@ -68,5 +52,3 @@
 </nav>
 
 {% endblock %}
-
-

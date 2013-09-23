@@ -17,10 +17,8 @@
     <link rel="stylesheet" href="/static/css/main.css">
   </head>
   <body>
-    <div><h1 style="text-align:center">The Pioneer</h1></div>
+    {% block navigation %}{% endblock %}
     <div class="container">
-      <div>Microblog: <a href="/index">Home</a></div>
-      <hr/>
       {% block content %}{% endblock %}
     </div>
 
@@ -39,5 +37,5 @@
         r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
         ga('create','UA-XXXXX-X');ga('send','pageview');
     </script>-->
-    </body>
+  </body>
 </html>
