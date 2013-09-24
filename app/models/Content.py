@@ -18,6 +18,7 @@ class Content(db.Model):
 	image_url = db.Column(db.String(2048))
 	rank = db.Column(db.Integer, index = True)
 	meta_tags = db.Column(db.String())
+	icon_url = db.Column(db.String(2048))
 
 	type_id = db.Column(db.Integer, db.ForeignKey('content_types.id'), index = True)
 	site_name_id = db.Column(db.Integer, db.ForeignKey('site_names.id'), index = True)
@@ -30,9 +31,10 @@ class Content(db.Model):
 		socialShare = SocialShare.createSocialShare(session, kargs['facebook_shares'], 
 			kargs['retweets'], kargs['upvotes'])
 
-		content = cls.getContentByLink(session, kargs['url'])
+		content = cls.getContentByLink(kargs['url'])
 		if content:
 			socialShare.content = content
+			session.commit()
 			return content
 
 		content = cls(url = kargs['url'], title=kargs['title'], 
@@ -50,8 +52,8 @@ class Content(db.Model):
 		if 'site_name' in kargs:
 			siteName = SiteName.getOrCreateSiteName(session, kargs['site_name'])
 			content.siteName = siteName
-		if 'img_url' in kargs:
-			content.image_url = kargs['img_url']
+		if 'image_url' in kargs:
+			content.image_url = kargs['image_url']
 		if 'text' in kargs:
 			content.text = kargs['text']
 		if 'meta_tags' in kargs:
@@ -59,7 +61,7 @@ class Content(db.Model):
 		if 'tags' in kargs:
 			tagObjects = []
 			for tag in kargs['tags']:
-				tagObjects += Tag.getOrCreateTag(session, tag)
+				tagObjects.append(Tag.getOrCreateTag(session, tag))
 			content.tags = tagObjects
 
 		session.add(content)
@@ -67,8 +69,8 @@ class Content(db.Model):
 		return content
 
 	@classmethod
-	def getContentByLink(cls, session, url):
-		return session.query(cls).filter(cls.url == url).first()
+	def getContentByLink(cls, url):
+		return cls.query.filter(cls.url == url).first()
 
 	@classmethod
 	def getFrontPage(cls):

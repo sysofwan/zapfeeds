@@ -2,7 +2,6 @@ import feedparser
 import requests
 import time
 from bs4 import BeautifulSoup
-from string import join
 import json
 from app import db
 from app.models.Content import Content
@@ -62,8 +61,6 @@ LEAVE_URL = ['www.youtube.com']
 #set up tagger 
 weights = pickle.load(open('dict.pkl', 'rb'))
 auto_tag = Tagger(Reader(), Stemmer(), Rater(weights))
-
-
 
 
 def social_count(url,reddit=True):	
@@ -230,7 +227,7 @@ def get_metadata(url='', pageReq=''):
 	if 'imgur.com' in url:
 		type_doc = 'image'
 	elif type_data1:
-		type = type_data1.get('content')
+		type_doc = type_data1.get('content')
 	elif type_data2:
 		type_doc = type_data2
 		if 'image' in type_data2: type_doc = 'image'
@@ -249,13 +246,19 @@ def get_metadata(url='', pageReq=''):
 	if 'imgur.com' in url:
 		keywords = ''
 	if keywords: data['tags']=keywords.split(',')
-
-	try:
-		data['tags'] = list(set(data['tags'] + auto_tagger(pageReq.text)))
-	except:
-		pass
+	data['tags'] = list(set(data['tags'] + auto_tagger(pageReq.text)))
+	
+	#cleaning the data from tags.
+	for tag in data['tags']:
+		if '--' in tag:
+			data['tags'].remove(tag)
+		if len(tag) > 20:
+			data['tags'].remove(tag)
+	data['tags'] = [tag.replace('\'', '') for tag in data['tags']]
+	data['tags'] = [tag.replace('\"', '') for tag in data['tags']]
+	data['tags'] = [tag.strip() for tag in data['tags']]
 		
-        #find image_url
+    #find image_url
 	image_url = ''
 	image_data1 = soup.find('meta',{'property':'og:image'})
 	image_data2 = soup.find('meta',{'name':'twitter:image'})
@@ -275,13 +278,11 @@ def get_metadata(url='', pageReq=''):
 
 
 def auto_tagger(raw_html):
-
-	
 	try:
 		extractor = Extractor(extractor='ArticleExtractor', html=raw_html)
 	except:
-		print 'In auto_tagger problem opening url: ', url
-		return data
+		print 'Problem extracting content for tagging'
+		return []
 	
 	text_string = extractor.getText()
 	text_string = unicodedata.normalize('NFKD', text_string).encode('ascii','ignore')
@@ -291,7 +292,7 @@ def auto_tagger(raw_html):
 	except:
 		return []
 
-	return tags
+	return [str(tag) for tag in tags]
 	
 	
 def requestRssData(url, google=False, newsvine=False, fark=False):
@@ -337,14 +338,18 @@ def requestRssData(url, google=False, newsvine=False, fark=False):
 			except:
 				continue
 
-		
-
-		#get the content if url is valid
-		urlContentData = url_content(url_primary,url_secondary)
-		if urlContentData:
-			dictData = dict(dictData.items() + urlContentData.items())
+		#if content is in database, do not get page (url still needs to be in dict to allow socialCount)
+		if Content.getContentByLink(url_primary):
+			dictData['url'] = url_primary
+		elif Content.getContentByLink(url_secondary):
+			dictData['url'] = url_secondary
 		else:
-			continue
+			#get the content if url is valid
+			urlContentData = url_content(url_primary,url_secondary)
+			if urlContentData:
+				dictData = dict(dictData.items() + urlContentData.items())
+			else:
+				continue
 
 		#get social count
 		dictData = dict(dictData.items() + social_count(dictData['url']).items())
@@ -367,7 +372,7 @@ def loadDatabase():
 		else:
 			data = requestRssData(url)
 		for content in data:
-			print 'Storing ' + content['title'] + ' from ' + url + ' ...'
+			print 'Storing ' + content['url'] + ' from ' + url + ' ...'
 			Content.getOrCreateContent(db.session,**content)
 		db.session.commit()
 

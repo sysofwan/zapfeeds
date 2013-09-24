@@ -97,6 +97,7 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+body { padding-top: 70px; }
 div.img-container {
     height: 200px;
     width: 100%;
