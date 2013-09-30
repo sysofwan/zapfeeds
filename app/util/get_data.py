@@ -271,10 +271,7 @@ def get_metadata(url='', pageReq=''):
 		image_url = image_data2.get('content')
 	if image_url: data['image_url']=image_url
 
-
-
 	return data
-
 
 
 def auto_tagger(raw_html):
