@@ -9,13 +9,13 @@ class Tag(db.Model):
 	tag_string = db.Column(db.String(64), index = True, nullable=False, unique=True)
 
 	contents = db.relationship('Content', backref = 'tags', secondary = 'tags_contents')
-	primaryContents = db.relationship('Content', backref = 'primaryTag')
+	contentSource = db.relationship('ContentSource', backref = 'tag')
 
 	@classmethod
 	def getOrCreateTag(cls, session, tagname):
 		"""Returns a tag with given tagname if it exists. Else, creates 
 		a new tag, add it to session and returns it"""
-		tag = cls.getTag(session, tagname)
+		tag = cls.getTag(tagname)
 		if tag:
 			return tag
 		tag = cls(tag_string =  tagname)
@@ -24,8 +24,8 @@ class Tag(db.Model):
 		return tag
 
 	@classmethod
-	def getTag(cls, session, tagname):
-		return session.query(cls).filter(cls.tag_string == tagname).first()
+	def getTag(cls, tagname):
+		return cls.query.filter(cls.tag_string == tagname).first()
 
 
 class TagContent(db.Model):
@@ -49,7 +49,7 @@ class ContentType(db.Model):
 	def getOrCreateContentType(cls, session, typename):
 		"""Returns ContentType with given type name if it exists. Else, creates 
 		a new ContentType, add it to session and returns it"""
-		cType = cls.getContentType(session, typename)
+		cType = cls.getContentType(typename)
 		if cType:
 			return cType
 		cType = cls(type_string =  typename)
@@ -58,8 +58,8 @@ class ContentType(db.Model):
 		return cType
 
 	@classmethod
-	def getContentType(cls, session, typename):
-		return session.query(cls).filter(cls.type_string == typename).first()
+	def getContentType(cls, typename):
+		return cls.query.filter(cls.type_string == typename).first()
 
 class SocialShare(db.Model):
 	"""Number of shares/likes/upvotes in social sites"""
@@ -95,7 +95,7 @@ class SiteName(db.Model):
 	def getOrCreateSiteName(cls, session, siteName):
 		"""Returns SiteName with given type name if it exists. Else, creates 
 		a new SiteName, add it to session and returns it"""
-		sName = cls.getSiteName(session, siteName)
+		sName = cls.getSiteName(siteName)
 		if sName:
 			return sName
 		sName = cls(site_name =  siteName)
@@ -104,6 +104,32 @@ class SiteName(db.Model):
 		return sName
 
 	@classmethod
-	def getSiteName(cls, session, siteName):
-		return session.query(cls).filter(cls.site_name == siteName).first()
+	def getSiteName(cls, siteName):
+		return cls.query.filter(cls.site_name == siteName).first()
+
+class ContentSource(db.Model):
+	"""Stores RSS urls, reddit RSS, and other content sources"""
+	__tablename__ = 'content_sources'
+
+	id = db.Column(db.Integer, primary_key = True)
+	url = db.Column(db.String(2048), unique=True, nullable=False)
+	tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'))
+
+	contents = db.relationship('Content', backref = 'source')
+
+	@classmethod
+	def getOrCreateContentSource(cls, session, url, tag):
+		cSource = cls.getContentSource(url)
+		if cSource:
+			return cSource
+		tag = Tag.getOrCreateTag(session, tag)
+		cSource = cls(url = url)
+		cSource.tag = tag
+		session.add(cSource)
+		session.commit()
+		return cSource
+
+	@classmethod
+	def getContentSource(cls, url):
+		return cls.query.filter(cls.url == url).first()
 

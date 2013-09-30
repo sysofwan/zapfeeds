@@ -3,17 +3,12 @@ import requests
 import time
 from bs4 import BeautifulSoup
 import json
-from app import db
 from app.models.Content import Content
-from apscheduler.scheduler import Scheduler
 from urlparse import urlparse
 from boilerpipe.extract import Extractor
 import pickle
 from tagger import Reader,Stemmer,Rater,Tagger
 import unicodedata
-
-
-sched = Scheduler()
 
 RSS = ['http://rss.cnn.com/rss/cnn_topstories.rss',
        'http://feeds.gawker.com/lifehacker/full',
@@ -61,47 +56,6 @@ LEAVE_URL = ['www.youtube.com']
 #set up tagger 
 weights = pickle.load(open('dict.pkl', 'rb'))
 auto_tag = Tagger(Reader(), Stemmer(), Rater(weights))
-
-
-def social_count(url,reddit=True):	
-	data = {'facebook_shares':0,'retweets':0}
-
-	#get facebooks share
-
-	try:
-		fb_temp = requests.get('https://graph.facebook.com/?ids='+url).json()
-		data['facebook_shares'] = fb_temp[url]['shares']
-	except KeyError:
-		fb_temp = requests.get('https://graph.facebook.com/'+url).json()
-		if 'shares' in fb_temp:
-			data['facebook_shares'] = fb_temp['shares']
-	except:
-		pass
-		
-	#get twitters retweet
-	twit_temp = requests.get('http://urls.api.twitter.com/1/urls/count.json?url='+url).json()
-	if 'count' in twit_temp:
-		data['retweets'] = twit_temp['count']
-	
-	#if reddits upvote data is not required, return data
-	if reddit == False:
-		return data
-	
-	data['upvotes'] = 0
-
-	#get reddits upvote
-	try:
-		redditRedirectReq = requests.get('http://www.reddit.com/'+url)
-		reddit_url = redditRedirectReq.url
-		if reddit_url[-1] != '/':
-			reddit_url += '/'
-		reddit_url += '.json'
-		reddit_temp = requests.get(reddit_url).json()
-		data['upvotes'] = reddit_temp[0]['data']['children'][0]['data']['ups']
-	except:
-	      	pass
-
-	return data
 
 def url_content(url_primary,url_secondary=''):
 	data = {}
@@ -249,14 +203,10 @@ def get_metadata(url='', pageReq=''):
 	data['tags'] = list(set(data['tags'] + auto_tagger(pageReq.text)))
 	
 	#cleaning the data from tags.
-	for tag in data['tags']:
-		if '--' in tag:
-			data['tags'].remove(tag)
-		if len(tag) > 20:
-			data['tags'].remove(tag)
 	data['tags'] = [tag.replace('\'', '') for tag in data['tags']]
 	data['tags'] = [tag.replace('\"', '') for tag in data['tags']]
 	data['tags'] = [tag.strip() for tag in data['tags']]
+	data['tags'] = [tag for tag  in data['tags'] if ( '--' not in tag and len(tag) < 20 and tag)]
 		
     #find image_url
 	image_url = ''
@@ -271,7 +221,16 @@ def get_metadata(url='', pageReq=''):
 		image_url = image_data2.get('content')
 	if image_url: data['image_url']=image_url
 
-
+	#find page icon
+	icon_1 = soup.find('link', {'rel':'icon'})
+	icon_2 = soup.find('link', {'rel':'shortcut icon'})
+	icon_3 = soup.find('link', {'rel':'Shortcut Icon'})
+	if icon_1:
+		data['icon_url'] = icon_1.get('href')
+	elif icon_2:
+		data['icon_url'] = icon_2.get('href')
+	elif icon_3:
+		data['icon_url'] = icon_3.get('href')
 
 	return data
 
@@ -300,6 +259,10 @@ def requestRssData(url, google=False, newsvine=False, fark=False):
 	data = []
 	for i in content.entries:
 		dictData = {}
+		if Content.getContentByRawUrl(i.link):
+			print 'content in database, continue..'
+			continue
+		dictData['raw_url'] = i.link
 		dictData['description'] = cleanSoupHtml(i.description).get_text()
 		dictData['title'] = i.title
 		try:
@@ -338,43 +301,16 @@ def requestRssData(url, google=False, newsvine=False, fark=False):
 			except:
 				continue
 
-		#if content is in database, do not get page (url still needs to be in dict to allow socialCount)
-		if Content.getContentByLink(url_primary):
-			dictData['url'] = url_primary
-		elif Content.getContentByLink(url_secondary):
-			dictData['url'] = url_secondary
+		#get the content if url is valid
+		urlContentData = url_content(url_primary,url_secondary)
+		if urlContentData:
+			dictData = dict(dictData.items() + urlContentData.items())
 		else:
-			#get the content if url is valid
-			urlContentData = url_content(url_primary,url_secondary)
-			if urlContentData:
-				dictData = dict(dictData.items() + urlContentData.items())
-			else:
-				continue
-
-		#get social count
-		dictData = dict(dictData.items() + social_count(dictData['url']).items())
+			continue
 
 		data.append(dictData)
 		time.sleep(1)
 	return data
-
-
-@sched.interval_schedule(hours=1)
-def loadDatabase():
-
-	for url in RSS+RSS_AGG:
-		if 'google.com' in url:
-			data = requestRssData(url,google=True)
-		elif 'newsvine.com' in url:
-			data = requestRssData(url,newsvine=True)
-		elif 'feedsportal.com/c/35344/f' in url:
-			data = requestRssData(url,fark=True)
-		else:
-			data = requestRssData(url)
-		for content in data:
-			print 'Storing ' + content['url'] + ' from ' + url + ' ...'
-			Content.getOrCreateContent(db.session,**content)
-		db.session.commit()
 
 # accepts a html string and returns a soup object with only contents
 def cleanSoupHtml(html):
