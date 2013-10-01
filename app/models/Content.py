@@ -1,14 +1,15 @@
 from app import db
 from time import mktime
-from datetime import datetime
-from contentMeta import ContentType, SiteName, SocialShare, Tag
+from datetime import datetime, timedelta
+from contentMeta import ContentType, SiteName, Tag
 
 class Content(db.Model):
-	"""All contents inndexed..."""
+	"""All contents indexed..."""
 	__tablename__ = 'contents'
 
 	id = db.Column(db.Integer, primary_key = True)
 	url = db.Column(db.String(2048), unique=True, nullable=False)
+	raw_url = db.Column(db.String(2048), unique=True, nullable=False)
 	text = db.Column(db.String(100000))
 	title = db.Column(db.String(1000), index=True, nullable=False)
 	raw_html = db.Column(db.String())
@@ -22,24 +23,20 @@ class Content(db.Model):
 
 	type_id = db.Column(db.Integer, db.ForeignKey('content_types.id'), index = True)
 	site_name_id = db.Column(db.Integer, db.ForeignKey('site_names.id'), index = True)
-	primary_tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'), index = True)
+	content_source_id = db.Column(db.Integer, db.ForeignKey('content_sources.id'), index = True)
 
 	socialShares = db.relationship('SocialShare', backref = 'content')
 
 	@classmethod
 	def getOrCreateContent(cls, session, **kargs):
-		socialShare = SocialShare.createSocialShare(session, kargs['facebook_shares'], 
-			kargs['retweets'], kargs['upvotes'])
 
 		content = cls.getContentByLink(kargs['url'])
 		if content:
-			socialShare.content = content
 			session.commit()
 			return content
 
-		content = cls(url = kargs['url'], title=kargs['title'], 
+		content = cls(url = kargs['url'], title=kargs['title'], raw_url=kargs['raw_url'],
 			timestamp=datetime.fromtimestamp(mktime(kargs['timestamp'])))
-		socialShare.content = content
 
 		if 'description' in kargs:
 			content.description = kargs['description'] 
@@ -58,6 +55,8 @@ class Content(db.Model):
 			content.text = kargs['text']
 		if 'meta_tags' in kargs:
 			content.meta_tags = kargs['meta_tags']
+		if 'icon_url' in kargs:
+			content.icon_url = kargs['icon_url']
 		if 'tags' in kargs:
 			tagObjects = []
 			for tag in kargs['tags']:
@@ -71,6 +70,14 @@ class Content(db.Model):
 	@classmethod
 	def getContentByLink(cls, url):
 		return cls.query.filter(cls.url == url).first()
+
+	@classmethod
+	def getContentByRawUrl(cls, url):
+		return cls.query.filter(cls.raw_url == url).first()
+
+	@classmethod
+	def getContentFromNDaysAgo(cls, daysAgo):
+		return cls.query.filter(cls.timestamp > datetime.utcnow()-timedelta(days = daysAgo))
 
 	@classmethod
 	def getFrontPage(cls):
