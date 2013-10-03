@@ -28,6 +28,8 @@ def populateSocialShares():
 	contents = Content.getContentFromNDaysAgo(1)
 	print "updating social shares"
 	for i in contents:
+		if len(i.socialShares) > 3:
+			continue
 		data = social_count(i.url)
 		socialShare = SocialShare.createSocialShare(db.session, data['facebook_shares'], data['retweets'], data['upvotes'])
 		socialShare.content = i
