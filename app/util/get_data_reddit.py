@@ -92,7 +92,7 @@ def get_data_reddit():
             print 'TITLE:' + content['title'] + ' URL: ' + content['url']
             print '------------------------------------------------------'
             time.sleep(0.5)
-            Content.getOrCreateContent(db.session,**content)
+            Content.create_or_update_content(db.session,**content)
         db.session.commit()
         
 

@@ -175,15 +175,17 @@ def get_metadata(url='', pageReq=''):
     type_data1 = soup.find('meta', {'property': 'og:type'})
     type_data2 = ''
     type_data2_temp = pageReq.headers
-    if 'content-type' in type_data2_temp: type_data2 = type_data2_temp['content-type']
+    if 'content-type' in type_data2_temp:
+        type_data2 = type_data2_temp['content-type']
     if 'imgur.com' in url:
         type_doc = 'image'
     elif type_data1:
-        type_doc = type_data1.get('content')
+        type_doc = type_data1.get('content').split('.')[0]
     elif type_data2:
         type_doc = type_data2
         if 'image' in type_data2: type_doc = 'image'
-    if type_doc: data['type'] = type_doc
+    if type_doc:
+        data['content_type'] = type_doc
 
 
     #find keywords
@@ -230,6 +232,11 @@ def get_metadata(url='', pageReq=''):
     elif icon_3:
         data['icon_url'] = icon_3.get('href')
 
+    #find site name
+    site_name = soup.find('meta', {'property': 'og:site_name'})
+    if site_name:
+        data['site_name'] = site_name.get('content')
+
     return data
 
 
@@ -251,12 +258,12 @@ def auto_tagger(raw_html):
     return [str(tag) for tag in tags]
 
 
-def requestRssData(url, google=False, newsvine=False, fark=False):
+def requestRssData(url, google=False, newsvine=False, fark=False, force_refresh=False):
     content = feedparser.parse(url)
     data = []
     for i in content.entries:
         dictData = {}
-        if Content.getContentByRawUrl(i.link):
+        if not force_refresh and Content.get_content_by_url(i.link):
             print 'content in database, continue..'
             continue
         dictData['raw_url'] = i.link
