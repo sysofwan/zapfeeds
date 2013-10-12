@@ -41,4 +41,5 @@ config.py
 .DS_Store
 db_repository
 temp
+.idea
 *~
