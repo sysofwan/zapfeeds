@@ -3,9 +3,14 @@ import requests
 import time
 from app import db
 from app.models.Content import Content
-from get_data import social_count, url_content
+from get_data import url_content
 
 
+REDDIT_RSS = ['http://www.reddit.com/r/news/new/.rss?limit=100',
+              'http://www.reddit.com/r/worldnews/new/.rss?limit=100']
+
+
+'''
 REDDIT_RSS = ['http://www.reddit.com/r/news/.rss?limit=100',
               'http://www.reddit.com/r/news/new/.rss?limit=100',
               'http://www.reddit.com/r/worldnews/.rss?limit=100',
@@ -13,7 +18,7 @@ REDDIT_RSS = ['http://www.reddit.com/r/news/.rss?limit=100',
 
 REDDIT_RSS += ['http://www.reddit.com/r/technology/.rss?limit=100',
               'http://www.reddit.com/r/business/.rss?limit=100']
-'''
+
 REDDIT_RSS += ['http://www.reddit.com/r/videos/.rss?limit=100',
                'http://www.reddit.com/.rss?limit=100']
 '''
@@ -36,6 +41,7 @@ def rss_data(url):
         dictData['timestamp'] = i.published_parsed
         
         #reddit comment section url
+        dictData['raw_url'] = i.link
         url_reddit_comment = i.link
             
         #check if url ends with a '/'
@@ -60,7 +66,7 @@ def rss_data(url):
         else:
             print 'No content for url:' + url_reddit_content
             continue
-
+        '''
         #get social count from both reddit comment url and reddit url content
         social1 = social_count(url_reddit_comment,reddit=False)       
         social2 = social_count(url_reddit_content,reddit=False)
@@ -68,6 +74,7 @@ def rss_data(url):
         #adding dict social1 and social2
         social = dict( (n, social1.get(n, 0)+social2.get(n, 0)) for n in set(social1)|set(social2) )
         dictData = dict(dictData.items() + social.items())
+        '''
 
         #store dict in list 
         data.append(dictData)
