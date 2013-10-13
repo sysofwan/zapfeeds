@@ -5,7 +5,10 @@ app = Flask(__name__)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 
+from rest import rest
 from app import views
 from models.Content import Content
 from models.User import User
 from models.contentMeta import Tag, TagContent, ContentType, SocialShare, SiteName
+
+app.register_blueprint(rest)

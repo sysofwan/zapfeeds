@@ -97,31 +97,89 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
-body { padding-top: 70px; }
+body {
+    padding-top: 70px;
+    background-color: #f5f5f5;
+}
+
 div.img-container {
     height: 200px;
     width: 100%;
     overflow: hidden;
+    background-color: #d3d3d3;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 110%;
+}
+
+div.parent_content {
+    margin-bottom: 20px;
+}
+
+div.card_content {
+    height: 350px;
+    overflow: hidden;
+    border-radius: 10px;
 }
 
 img.content-thumbnail {
     width: 100%;
 }
 
+div.no_image {
+    display: table;
+    border: thin solid #d3d3d3;
+}
+
+.no_image h3.content-title {
+    font-size: 18px;
+}
+
 div.content-container {
     height: 150px;
     overflow: hidden;
     margin-bottom: 15px;
+    padding: 3px 8px 8px 8px;
+    background-color: #ffffff;
+}
+
+.no_image .content-container {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.with_image .content-container {
+    border-right: thin solid #d3d3d3;
+    border-bottom: thin solid #d3d3d3;
+    border-left: thin solid #d3d3d3;
+    border-radius: 0px 0px 10px 10px;
 }
 
 h3.content-title {
     margin-top: 5px;
-    font-size: 20px;
+    font-size: 15px;
+}
+
+.content-container div.description {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 18px;
+    color: #515151;
+}
+
+.with_image .content-container div.description {
+    height: 90px;
+    overflow: hidden;
 }
 
 h3.content-title a {
-    color: black; 
+    color: black;
 }
+
+h3.content-title a:hover {
+    color: #61b4ff;
+}
+
 
 h3.content-title:hover a {
     text-decoration: none;

@@ -16,8 +16,7 @@ def login():
 
 @app.route('/')
 def main():
-    contents = Content.getFrontPage()
-    return render_template("main.html", contents = contents)
+    return render_template("base.html")
 
 @app.route('/favicon.ico')
 def favicon():

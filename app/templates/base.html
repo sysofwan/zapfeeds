@@ -3,6 +3,7 @@
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<html data-ng-app="app">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,13 +19,25 @@
   </head>
   <body>
     {% include 'navbar.html' %}
-    <div class="container">
-      {% block content %}{% endblock %}
-    </div>
 
+    <!--AngularJS content is injected here-->
+    <div class="container" data-ng-view=""></div>
+
+    <!--Vendor libs, AngularJS, jQuery and bootstrap-->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+    <script>window.angular || document.write('<script src="/static/js/vendor/angular.js"><\/script>')</script>
+    <script src="static/js/vendor/angular-route.min.js"></script>
+    <script src="static/js/vendor/angular-animate.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="/static/js/vendor/jquery-1.10.2.min.js"><\/script>')</script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+
+    <!--AngularJS JS files-->
+    <script src="/static/js/app/app.js"></script>
+    <script src="/static/js/app/controller.js"></script>
+    <script src="/static/js/app/factory.js"></script>
+
+    <!--Other JS files-->
     <script src="/static/js/plugins.js"></script>
     <script src="/static/js/main.js"></script>
     <!--Google analytics, add later-->
