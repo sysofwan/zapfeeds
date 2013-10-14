@@ -119,7 +119,6 @@ class Content(db.Model):
             'description': self.description,
             'icon_url': self.icon_url,
             'tags': [tag_str.tag_string for tag_str in self.tags],
-            'primary_tag': self.source.tag.tag_string,
         }
         if self.type:
             serialized['type'] = self.type.type_string
@@ -129,6 +128,9 @@ class Content(db.Model):
             serialized['image_url'] = self.image_url
         else:
             serialized['image_url'] = ""
+
+        if self.source.tag:
+            serialized['primary_tag'] = self.source.tag.tag_string
 
         return serialized
 

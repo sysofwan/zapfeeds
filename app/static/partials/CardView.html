@@ -1,5 +1,6 @@
 <div class="row">
-    <div class="col-md-4 parent_content" data-ng-repeat="content in contents" data-ng-switch="" on="content.image_url">
+    <div class="col-md-4 parent_card_content" data-ng-repeat="content in contents"
+         data-ng-switch="" on="content.image_url" data-ng-animate="{enter: 'page-enter', leave: 'page-leave'}">
         <div class="no_image card_content" data-ng-switch-when="">
             <div class="content-container">
                <h3 class="content-title"><a href="{{content.url}}" target="_blank">{{content.title}}</a></h3>
@@ -9,7 +10,7 @@
 
         <div class="with_image card_content" data-ng-switch-default>
             <a href="{{ content.url }}" target="_blank">
-                <div class="img-container" style="background-image: url({{content.image_url}});"></div>
+                <div class="card-image content-image" style="background-image: url({{content.image_url}});"></div>
             </a>
             <div class="content-container">
                 <h3 class="content-title"><a href="{{content.url}}" target="_blank">{{content.title}}</a></h3>
