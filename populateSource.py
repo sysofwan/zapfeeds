@@ -1,3 +1,4 @@
+#!flask/bin/python
 from app.models.contentMeta import ContentSource, ContentType
 from app import db
 
@@ -54,3 +55,7 @@ def populate_sources():
 
     for type_name in types:
         ContentType.getOrCreateContentType(db.session, type_name)
+
+if __name__ == '__main__':
+    populate_sources()
+    print 'Done populating sources'

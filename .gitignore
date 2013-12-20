@@ -37,7 +37,6 @@ nosetests.xml
 
 #Cutom for project
 flask
-config.py
 .DS_Store
 db_repository
 temp
