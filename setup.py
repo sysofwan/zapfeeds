@@ -1,4 +1,26 @@
-#!/usr/bin/python
+#! /bin/sh
+# -*- mode: python; coding: utf-8 -*-
+
+# This file is used as both a shell script and as a Python script.
+
+""":"
+# This part is run by the shell.  It looks for an appropriate Python
+# interpreter then uses it to re-exec this script.
+
+if test -x /usr/bin/python2.7
+then
+  PYTHON=/usr/bin/python2.7
+elif test -x /usr/local/bin/python2.7
+then
+  PYTHON=/usr/local/bin/python2.7
+else
+  echo 1>&2 "Python2.7 interpreter not found!"
+  exit 1
+fi
+
+exec $PYTHON "$0" "$@"
+" """
+
 import os, subprocess, sys
 subprocess.call(['python', 'virtualenv.py', 'flask'])
 if sys.platform == 'win32':
