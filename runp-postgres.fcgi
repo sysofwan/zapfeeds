@@ -8,4 +8,4 @@ from app.util.scheduled_jobs import sched
 
 if __name__ == '__main__':
 	sched.start()
-    WSGIServer(app).run()
+	WSGIServer(app).run()
