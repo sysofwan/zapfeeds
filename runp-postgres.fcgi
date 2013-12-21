@@ -1,6 +1,5 @@
 #!flask/bin/python
-
-# use mysql
+import os
 os.environ['DATABASE_URL'] = 'postgresql://apps@localhost/aggregator_daddy'
 
 from flup.server.fcgi import WSGIServer
