@@ -13,7 +13,6 @@ then
 elif test -x /usr/local/bin/python2.7
 then
   PYTHON=/usr/local/bin/python2.7
-  echo 1>&2 "using interpreter from usr/local/bin"
 else
   echo 1>&2 "Python2.7 interpreter not found!"
   exit 1
@@ -23,7 +22,7 @@ exec $PYTHON "$0" "$@"
 " """
 
 import os, subprocess, sys
-subprocess.call(['python', 'virtualenv.py', 'flask'])
+subprocess.call(['python2.7', 'virtualenv.py', 'flask'])
 if sys.platform == 'win32':
     bin = 'Scripts'
 else:
