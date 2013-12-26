@@ -179,7 +179,8 @@ div.content-container {
 
 h3.content-title {
     margin-top: 5px;
-    font-size: 15px;
+    font-size: 18px;
+    font-weight: bolder;
 }
 
 .content-container div.description {
