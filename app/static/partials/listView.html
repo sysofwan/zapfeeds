@@ -1,5 +1,6 @@
-<div class="row list-content">
-    <div class="col-md-12 parent_list_content" data-ng-repeat="content in contents" data-ng-animate="{enter: 'page-enter', leave: 'page-leave'}">
+<div class="row list-content" data-infinite-scroll="loadMore()" data-track-history=""
+     infinite-scroll-immediate-check="false">
+    <div class="col-md-12 parent_list_content content" data-ng-repeat="content in contents" data-ng-animate="{enter: 'page-enter', leave: 'page-leave'}">
         <a href="{{ content.url }}" target="_blank">
             <div class="list_image content-image" style="background-image: url({{ content.image_url }})"></div>
         </a>

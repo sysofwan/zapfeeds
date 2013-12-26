@@ -1,5 +1,6 @@
-<div class="row">
-    <div class="col-md-4 parent_card_content" data-ng-repeat="content in contents"
+<div class="row" data-infinite-scroll="loadMore()" data-track-history=""
+     infinite-scroll-immediate-check="false">
+    <div class="col-md-4 parent_card_content content" data-ng-repeat="content in contents"
          data-ng-switch="" on="content.image_url" data-ng-animate="{enter: 'page-enter', leave: 'page-leave'}">
         <div class="no_image card_content" data-ng-switch-when="">
             <div class="content-container">

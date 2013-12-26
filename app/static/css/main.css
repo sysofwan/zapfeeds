@@ -132,6 +132,7 @@ div.card_content {
     height: 350px;
     overflow: hidden;
     border-radius: 10px;
+    width: 100%;
 }
 
 img.content-thumbnail {

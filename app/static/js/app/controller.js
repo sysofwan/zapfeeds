@@ -1,18 +1,21 @@
-app.controller('MainPageController', function($scope, contentFactory) {
+app.controller('MainPageController', function($window, $scope, $cookieStore, contentFactory) {
     $scope.contents = [];
-    var endIdx;
+    var page = 0;
+    var lastUpdate = (new Date()).getTime();
 
-    init();
+    $scope.loadContents = function(forceReload) {
+        contentFactory.getContents(function(results) {
+            $scope.contents = $scope.contents.concat(results);
+        }, forceReload);
+    };
 
-    function init() {
-        contentFactory.getFrontPage()
-            .success(function(content) {
-                $scope.contents = $scope.contents.concat(content.results);
-                console.log($scope.contents);
-                endIdx = content.endIdx;
-            })
-            .error(function(errMsg) {
-                console.log('Error with rest API: ' + errMsg)
-            });
-    }
+    $scope.loadMore = function() {
+        var currTime = (new Date()).getTime();
+
+        if (currTime - CONSTANTS.MILLISECONDS_BEFORE_NEXT_REQUEST() > lastUpdate) {
+            lastUpdate = currTime;
+            $scope.loadContents(true);
+        }
+    };
+    $scope.loadContents();
 });

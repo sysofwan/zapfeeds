@@ -1,4 +1,4 @@
-var app = angular.module('app', []);
+var app = angular.module('app', ['ngRoute', 'ngCookies', 'infinite-scroll']);
 
 app.config(function($routeProvider) {
    $routeProvider

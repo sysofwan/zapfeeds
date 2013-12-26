@@ -2,6 +2,8 @@ from app import db
 from time import mktime
 from datetime import datetime, timedelta
 from contentMeta import ContentType, SiteName, Tag
+from sqlalchemy import and_
+import random
 
 
 class Content(db.Model):
@@ -96,11 +98,28 @@ class Content(db.Model):
     def get_front_page_in_range(cls, start_idx, end_idx):
         return cls.query.filter(cls.rank != None).order_by(cls.rank.desc())[start_idx:end_idx]
 
+    @classmethod
+    def get_top_unviewed(cls, viewed=None):
+        if not viewed:
+            content = cls.query.filter(cls.rank != None).order_by(cls.rank.desc())[0:100]
+        else:
+            content = cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed))).order_by(cls.rank.desc())[0:100]
+        random.shuffle(content)
+        return content[0:30]
+
+
+    @classmethod
+    def get_top_by_pages(cls, page, viewed):
+        end_idx = page * 30
+        start_idx = end_idx - 30
+        return cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed)))[start_idx:end_idx]
+
+
     def getFriendlyDescription(self):
         """Returns the description, truncated to 300 characters"""
         if not self.description:
             return ''
-        if (len(self.title) > 65):
+        if len(self.title) > 65:
             return self.description[:120] + '...'
         return self.description[:200] + '...' if len(self.description) > 200 else self.description
 
@@ -109,7 +128,7 @@ class Content(db.Model):
 
     @property
     def fp_serialize(self):
-        '''Returns the object serialized as a dict for front page use'''
+        """Returns the object serialized as a dict for front page use"""
         serialized = {
             'id': self.id,
             'url': self.url,
