@@ -3,7 +3,7 @@
  */
 
 var CONSTANTS = (function() {
-    var max_history = 330;
+    var max_history = 360;
     var milliseconds_before_next_request = 3000;
     return {
         MAX_HISTORY: function() {return max_history;},

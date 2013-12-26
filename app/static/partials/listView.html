@@ -2,7 +2,9 @@
      infinite-scroll-immediate-check="false">
     <div class="col-md-12 parent_list_content content" data-ng-repeat="content in contents" data-ng-animate="{enter: 'page-enter', leave: 'page-leave'}">
         <a href="{{ content.url }}" target="_blank">
-            <div class="list_image content-image" style="background-image: url({{ content.image_url }})"></div>
+            <div class="img_wrapper">
+                <div class="list_image content-image" data-img-fade-in="content.image_url" style="background-image: url({{ content.image_url }})"></div>
+            </div>
         </a>
         <div class="list_content_container">
             <div class="list_title"><a href="{{ content.url }}" target="_blank">{{ content.title }}</a></div>

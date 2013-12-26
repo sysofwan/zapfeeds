@@ -107,12 +107,21 @@ body {
   min-height:500px;
 }
 
+div.img_wrapper {
+    background-color: #d3d3d3;
+}
+
 div.content-image {
     overflow: hidden;
-    background-color: #d3d3d3;
     background-repeat: no-repeat;
     background-position: center;
     background-size: 110%;
+
+    opacity:0;
+    -moz-transition: opacity 1s; /* Firefox 4 */
+    -webkit-transition: opacity 1s; /* Safari and Chrome */
+    -o-transition: opacity 1s;
+    transition: opacity 1s;
 }
 
 /*============================================================================
@@ -256,6 +265,14 @@ div.list_content_container .list_title a:hover {
 /* ==========================================================================
    Helper classes
    ========================================================================== */
+
+/*
+ *  Custom helper
+ */
+
+.make_opaque {
+    opacity: 1 !important;
+}
 
 /*
  * Image replacement

@@ -13,9 +13,11 @@ def get_top_content():
     valid_cookie = is_cookie_valid()
     history = get_history() if valid_cookie else []
     page_no = get_page_no() if valid_cookie else None
-    if len(history) <= 360 or not page_no:
+    if len(history) < 360:
         contents = [content.fp_serialize for content in Content.get_top_unviewed(history)]
     else:
+        if not page_no:
+            page_no = 1
         contents = [content.fp_serialize for content in Content.get_top_by_pages(page_no, history)]
     response = jsonify({'results': contents})
     if not history:
@@ -25,7 +27,6 @@ def get_top_content():
 
 def get_page_no():
     page = request.cookies.get('page')
-    print page
     if page and page.isdigit():
         return int(page)
     else:

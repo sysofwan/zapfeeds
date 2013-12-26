@@ -6,7 +6,7 @@ app.factory('contentFactory', function($http, $cookieStore) {
 
     var updatePageNo = function() {
         var history = $cookieStore.get('view_history') || [];
-        if (history.length > CONSTANTS.MAX_HISTORY()) {
+        if (history.length >= CONSTANTS.MAX_HISTORY()) {
             $cookieStore.put('page', ++page);
             console.log(page);
         }

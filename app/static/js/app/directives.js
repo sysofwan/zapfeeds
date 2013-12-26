@@ -27,7 +27,7 @@ app.directive('trackHistory', function($document, $cookieStore) {
         };
 
         var updateMaxCookie = function() {
-            if (seenElt.length > 330) {
+            if (seenElt.length >= CONSTANTS.MAX_HISTORY()) {
                 maxCookie = true;
             }
         };
@@ -42,5 +42,27 @@ app.directive('trackHistory', function($document, $cookieStore) {
 
     return {
         link : link
+    };
+});
+
+app.directive('imgFadeIn', function() {
+    console.log('called');
+    var link = function(scope, element, attrs) {
+        var imgUrl;
+
+        var showImgOnLoad = function() {
+             $('<img>').attr('src', function() {
+                return imgUrl;
+            }).on('load', function() {
+                element.addClass('make_opaque');
+            });
+        };
+        scope.$watch(attrs.imgFadeIn, function(value) {
+            imgUrl = value;
+            showImgOnLoad();
+        });
+    };
+    return {
+        link: link
     };
 });

@@ -4,17 +4,19 @@
          data-ng-switch="" on="content.image_url" data-ng-animate="{enter: 'page-enter', leave: 'page-leave'}">
         <div class="no_image card_content" data-ng-switch-when="">
             <div class="content-container">
-               <h3 class="content-title"><a href="{{content.url}}" target="_blank">{{content.title}}</a></h3>
+               <h3 class="content-title"><a href="{{content.url}}" target="_blank">{{content.title}} id={{ content.id }}</a></h3>
                <div class="description">{{content.description}}</div>
            </div>
         </div>
 
         <div class="with_image card_content" data-ng-switch-default>
             <a href="{{ content.url }}" target="_blank">
-                <div class="card-image content-image" style="background-image: url({{content.image_url}});"></div>
+                <div class="img_wrapper">
+                    <div class="card-image content-image" data-img-fade-in="content.image_url" style="background-image: url({{content.image_url}});"></div>
+                </div>
             </a>
             <div class="content-container">
-                <h3 class="content-title"><a href="{{content.url}}" target="_blank">{{content.title}}</a></h3>
+                <h3 class="content-title"><a href="{{content.url}}" target="_blank">{{content.title}} id={{ content.id }}</a></h3>
                 <div class="description">{{content.description}}</div>
             </div>
         </div>
