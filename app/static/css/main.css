@@ -221,13 +221,13 @@ div.parent_list_content {
     border: thin solid #d3d3d3;
     border-radius: 10px;
     padding: 0 5px 0 0;
-    height: 100px;
+    height: 105px;
     overflow: hidden;
 }
 
 div.list_image {
-    height: 100px;
-    width: 150px;
+    height: 105px;
+    width: 153px;
     float: left;
     margin-right: 8px;
     background-color: #d3d3d3;
