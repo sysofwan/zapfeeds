@@ -3,12 +3,13 @@
  */
 
 app.directive('trackHistory', function($document, $cookieStore) {
+    "use strict";
     var lastIdx = 0;
     var maxCookie = false;
 
     var link = function(scope, element, attrs) {
         var rawElt = element[0];
-        var seenElt = $cookieStore.get('view_history') || [];
+        var seenElt;
 
         var updateSeen = function() {
             var content = $('.content');
@@ -21,18 +22,21 @@ app.directive('trackHistory', function($document, $cookieStore) {
             var numEltSeen = Math.floor(seenHeight/heightPerContent) * contentsPerRow;
 
             for (; lastIdx < numEltSeen && lastIdx < scope.contents.length; ++lastIdx) {
-                seenElt.push(scope.contents[lastIdx]['id']);
+                seenElt.push(scope.contents[lastIdx].id);
             }
             $cookieStore.put('view_history', seenElt);
         };
 
         var updateMaxCookie = function() {
-            if (seenElt.length >= CONSTANTS.MAX_HISTORY()) {
-                maxCookie = true;
-            }
+            maxCookie = seenElt.length >= CONSTANTS.MAX_HISTORY();
+        };
+
+        var updateSeenElt = function() {
+            seenElt = $cookieStore.get('view_history') || [];
         };
 
         $($document).on('scroll', function() {
+            updateSeenElt();
             updateMaxCookie();
             if (!maxCookie) {
                 updateSeen();
@@ -46,7 +50,7 @@ app.directive('trackHistory', function($document, $cookieStore) {
 });
 
 app.directive('imgFadeIn', function() {
-    console.log('called');
+    "use strict";
     var link = function(scope, element, attrs) {
         var imgUrl;
 
@@ -54,6 +58,7 @@ app.directive('imgFadeIn', function() {
              $('<img>').attr('src', function() {
                 return imgUrl;
             }).on('load', function() {
+                element.css('background-image', 'url(' + imgUrl + ')');
                 element.addClass('make_opaque');
             });
         };
@@ -66,3 +71,19 @@ app.directive('imgFadeIn', function() {
         link: link
     };
 });
+
+/*app.directive('infiniteScroll', function($window, $document) {
+    var link = function(scope, element, attr) {
+        $window = $($window);
+        element = $(element[0]);
+
+        $document.on('scroll', function() {
+            if ($window.scrollTop() + $window.height() >= element.height()) {
+                scope.$apply(attr.infiniteScroll)
+            }
+        });
+    };
+    return {
+        link: link
+    };
+});*/

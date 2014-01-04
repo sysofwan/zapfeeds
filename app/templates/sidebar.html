@@ -1,0 +1,18 @@
+<div class="sidebar affix hidden-xs hidden-sm">
+    <div class="section">
+        <div class="section-heading">Filter</div>
+        <ul class="nav nav-stacked">
+            {% for type in content_types %}
+            <li><a href="/filter/?type={{ type.type_string }}">{{ type.type_string }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {#<div class="section">
+        <ul class="nav">
+            <li>asdasd</li>
+            <li>asdasd</li>
+            <li>asdasd</li>
+            <li>asdasdas</li>
+        </ul>
+    </div>#}
+</div>

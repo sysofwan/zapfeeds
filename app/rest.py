@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models.Content import Content
+from app.models.contentMeta import Tag
 import json
 import urllib2
 import datetime
@@ -20,9 +21,28 @@ def get_top_content():
             page_no = 1
         contents = [content.fp_serialize for content in Content.get_top_by_pages(page_no, history)]
     response = jsonify({'results': contents})
-    if not history:
-        set_cookie(response)
+    if not valid_cookie:
+        reset_cookie(response)
+    set_cookie_time(response)
     return response
+
+@rest.route('/content/filter/<int:page>', methods=['GET'])
+def get_filtered_content(page):
+    types = request.args.getlist('type')
+    tags = request.args.getlist('tag')
+    contents = []
+    if tags:
+        contents.extend([content.fp_serialize for content in Content.get_top_tag_filtered(page, tags)])
+    if types:
+        contents.extend([content.fp_serialize for content in Content.get_top_type_filtered(page, types)])
+    response = jsonify({'results': contents})
+    return response
+
+
+@rest.route('/meta/alltags', methods=['GET'])
+def get_all_tags():
+    tags = [tag.tag_string for tag in Tag.get_all_tags()]
+    return jsonify({'results': tags})
 
 
 def get_page_no():
@@ -49,12 +69,14 @@ def is_cookie_valid():
     return False
 
 
-def set_cookie(response):
-    # Five hours expire time (to change)
-    expire_time = int(time.mktime(datetime.datetime.now().timetuple())) + (5 * 60 * 60)
-    response.set_cookie('expr_usr', str(expire_time))
+def reset_cookie(response):
     response.set_cookie('view_history', '%5B%5D')
     response.set_cookie('page', '0')
 
+
+def set_cookie_time(response):
+    # Six hours since last visit expire time (to change)
+    expire_time = int(time.mktime(datetime.datetime.now().timetuple())) + (6 * 60 * 60)
+    response.set_cookie('expr_usr', str(expire_time))
 
 

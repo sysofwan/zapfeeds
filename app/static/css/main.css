@@ -97,6 +97,9 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+/* Allow angular to work well with bootstrap*/
+.nav, .pagination, .carousel a { cursor: pointer; }
+
 body {
     padding-top: 70px;
     background-color: #f5f5f5;
@@ -115,7 +118,7 @@ div.content-image {
     overflow: hidden;
     background-repeat: no-repeat;
     background-position: center;
-    background-size: 110%;
+    background-size: 120%;
 
     opacity:0;
     -moz-transition: opacity 1s; /* Firefox 4 */
@@ -211,33 +214,35 @@ h3.content-title:hover a {
     text-decoration: none;
 }
 
-div.list-content {
-    background-color: #ffffff;
-    border-radius: 10px;
-}
-
 div.parent_list_content {
-    padding: 10px;
-    border-bottom: thin solid #d3d3d3;
+    margin-bottom: 10px;
+    max-width: 700px;
+    background-color: #ffffff;
+    border: thin solid #d3d3d3;
+    border-radius: 10px;
+    padding: 0 5px 0 0;
+    height: 100px;
+    overflow: hidden;
 }
 
 div.list_image {
     height: 100px;
-    width: 15%;
+    width: 150px;
     float: left;
     margin-right: 8px;
-    border-radius: 5px;
+    background-color: #d3d3d3;
 }
 
 div.list_content_container {
-    float: left;
-    width: 83%;
     font-size: 13px;
-
 }
 
 div.list_content_container .list_title {
     margin-bottom: 3px;
+    margin-top: 3px;
+    line-height: 20px;
+    max-height: 40px;
+    overflow: hidden;
 }
 
 div.list_content_container .list_title a {
@@ -251,16 +256,71 @@ div.list_content_container .list_title a:hover {
     text-decoration: none;
 }
 
+div.list_description {
+    line-height: 18px;
+    max-height: 54px;
+    overflow: hidden;
+}
 
 
+/*============================================================================
+  Styles for sidebar
+  ============================================================================*/
 
+@media (min-width: 992px) {
+    .sidebar {
+        width: 213px;
+    }
+}
 
+@media (min-width: 1200px) {
+    .sidebar {
+        width: 263px;
+    }
+}
 
+.sidebar div.section {
+    background: #ffffff;
+    width: 100%;
+    border-radius: 10px;
+    border: thin solid #d3d3d3;
+    margin-bottom: 10px;
+    padding: 7px;
+}
 
+div.section .section-heading, .sidebar .nav > li > a {
+    padding: 3px 7px;
+}
 
+.sidebar .section-heading {
+    font-size: 14px;
+    line-height: 15px;
+}
 
+.sidebar .nav li {
+    font-size: 13px;
+    line-height: 13px;
+}
 
+/*============================================================================
+  Styles for spinner
+  ============================================================================*/
+div.spinner {
+    background-color: #000000;
+    position: fixed;
+    top: 85%;
+    left: 50%;
+    color: #ffffff;
+    text-align: center;
+    opacity: 0.7;
+    padding: 5px;
+    border-radius: 15px;
+    z-index: 200;
+}
 
+div.spinner div {
+    font-weight: bold;
+}
 
 
 /* ==========================================================================

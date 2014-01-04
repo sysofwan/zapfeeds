@@ -1,10 +1,12 @@
 from app import db
 from time import mktime
 from datetime import datetime, timedelta
-from contentMeta import ContentType, SiteName, Tag
+from contentMeta import ContentType, SiteName, Tag, TagContent
 from sqlalchemy import and_
 import random
 
+CONTENTS_PER_PAGE = 30
+TOP_CONTENTS_TO_SHUFFLE = 100
 
 class Content(db.Model):
     """All contents indexed..."""
@@ -101,18 +103,41 @@ class Content(db.Model):
     @classmethod
     def get_top_unviewed(cls, viewed=None):
         if not viewed:
-            content = cls.query.filter(cls.rank != None).order_by(cls.rank.desc())[0:100]
+            content = cls.query.filter(cls.rank != None)\
+                          .order_by(cls.rank.desc())[0:TOP_CONTENTS_TO_SHUFFLE]
         else:
-            content = cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed))).order_by(cls.rank.desc())[0:100]
+            content = cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed)))\
+                          .order_by(cls.rank.desc())[0:TOP_CONTENTS_TO_SHUFFLE]
         random.shuffle(content)
-        return content[0:30]
+        return content[0:CONTENTS_PER_PAGE]
 
 
     @classmethod
     def get_top_by_pages(cls, page, viewed):
-        end_idx = page * 30
-        start_idx = end_idx - 30
-        return cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed)))[start_idx:end_idx]
+        return cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed))).order_by(cls.rank.desc())\
+            .paginate(page, CONTENTS_PER_PAGE, False).items
+
+    @classmethod
+    def get_top_tag_filtered(cls, page, tags, viewed=None):
+        query = cls.query\
+            .join(TagContent, Content.id == TagContent.content_id)\
+            .join(Tag, Tag.id == TagContent.tag_id)
+        if viewed:
+            query = query.filter(and_(cls.rank != None, Tag.tag_string.in_(tags), ~cls.id.in_(viewed)))
+        else:
+            query = query.filter(and_(cls.rank != None, Tag.tag_string.in_(tags)))
+        return query.order_by(cls.rank.desc()).paginate(page, CONTENTS_PER_PAGE, False).items
+
+
+    @classmethod
+    def get_top_type_filtered(cls, page, types, viewed=None):
+        query = cls.query\
+            .join(ContentType, ContentType.id == cls.type_id)
+        if viewed:
+            query = query.filter(and_(cls.rank != None, ContentType.type_string.in_(types), ~cls.id.in_(viewed)))
+        else:
+            query = query.filter(and_(cls.rank != None, ContentType.type_string.in_(types)))
+        return query.order_by(cls.rank.desc()).paginate(page, CONTENTS_PER_PAGE, False).items
 
 
     def getFriendlyDescription(self):

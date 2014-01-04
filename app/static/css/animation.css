@@ -26,3 +26,21 @@
   left:-100px;
   opacity:0;
 }
+
+
+.fade-show {
+  -webkit-transition:all linear 0.3s;
+  -moz-transition:all linear 0.3s;
+  -ms-transition:all linear 0.3s;
+  -o-transition:all linear 0.3s;
+  transition:all linear 0.3s;
+}
+
+.fade-show.ng-hide-add,
+.fade-show.ng-hide-remove {
+  display:block!important;
+}
+
+.fade-show.ng-hide {
+  opacity:0;
+}

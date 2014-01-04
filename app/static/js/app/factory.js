@@ -1,34 +1,55 @@
 app.factory('contentFactory', function($http, $cookieStore) {
+    'use strict';
     var rootUrl = '/rest/content';
     var factory = {};
-    var contentCache;
-    var page = $cookieStore.get('page') || 0;
 
     var updatePageNo = function() {
+        var page = $cookieStore.get('page') || 0;
         var history = $cookieStore.get('view_history') || [];
         if (history.length >= CONSTANTS.MAX_HISTORY()) {
             $cookieStore.put('page', ++page);
-            console.log(page);
+        } else {
+            $cookieStore.put('page', 0);
         }
     };
 
-    factory.getContents = function(callback, forceRefresh) {
-        forceRefresh = forceRefresh || false;
+    factory.getContents = function(callback) {
+        updatePageNo();
+        $http.get(rootUrl + '/topcontent')
+            .success(function(contents) {
+                callback(contents.results);
+            })
+            .error(function(errMsg) {
+                console.log('Error with rest API: ' + errMsg);
+            });
+    };
 
-        if (!contentCache || forceRefresh) {
-            updatePageNo();
-            $http.get(rootUrl + '/topcontent')
-                .success(function(contents) {
-                    contentCache = contents.results;
-                    callback(contentCache);
-                })
-                .error(function(errMsg) {
-                    console.log('Error with rest API: ' + errMsg)
-                });
-        }
-        else {
-            callback(contentCache);
-        }
+    factory.filter = function(callback, page, filter) {
+        var url = g.urlBuilder(rootUrl + '/filter/' + page, filter);
+        $http.get(url)
+            .success(function(result) {
+                callback(result.results);
+            })
+            .error(function(errMsg) {
+                console.log('Error with rest API:' + errMsg);
+            });
+    };
+    return factory;
+});
+
+app.factory('contentMetaFactory', function($http) {
+    'use strict';
+    var rootUrl = '/rest/meta';
+    var factory = {};
+
+    factory.getAllTags = function(callback) {
+        $http.get(rootUrl + '/alltags')
+            .success(function(result) {
+                callback(result.results);
+            })
+            .error(function(errMsg) {
+                console.log('Error with rest API:' + errMsg);
+            });
     };
     return factory;
 });

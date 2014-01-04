@@ -28,6 +28,14 @@ class Tag(db.Model):
     def getTag(cls, tagname):
         return cls.query.filter(cls.tag_string == tagname).first()
 
+    @classmethod
+    def get_tags(cls, tags):
+        return cls.query.filter(cls.tag_string.in_(tags)).all()
+
+    @classmethod
+    def get_all_tags(cls):
+        return cls.query.order_by(cls.tag_string).all()
+
 
 class TagContent(db.Model):
     """Many-to-many relationship between RankedContent and Tags"""
@@ -62,6 +70,10 @@ class ContentType(db.Model):
     @classmethod
     def getContentType(cls, typename):
         return cls.query.filter(cls.type_string == typename).first()
+
+    @classmethod
+    def get_content_types_with_contents(cls):
+        return cls.query.filter(cls.contents != None).all()
 
 
 class SocialShare(db.Model):

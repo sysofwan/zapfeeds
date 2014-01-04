@@ -1,8 +1,8 @@
 import os
-from flask import render_template, flash, redirect, send_from_directory
+from flask import render_template, flash, redirect, send_from_directory, g
 from app import app
 from forms import LoginForm
-from app.models.Content import Content
+from app.models.contentMeta import ContentType, Tag
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
@@ -15,8 +15,14 @@ def login():
         form = form)
 
 @app.route('/')
+@app.route('/list/')
+@app.route('/grid/')
+@app.route('/filter/')
+@app.route('/list/filter/')
+@app.route('/grid/filter/')
 def main():
-    return render_template("base.html")
+    return render_template("main.html", all_tags=Tag.get_all_tags(),
+                           content_types=ContentType.get_content_types_with_contents())
 
 @app.route('/favicon.ico')
 def favicon():

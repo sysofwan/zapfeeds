@@ -1,14 +1,19 @@
-var app = angular.module('app', ['ngRoute', 'ngCookies', 'infinite-scroll']);
+/* global app: true */
+var app = angular.module('app', ['ngRoute', 'ngCookies', 'ngAnimate', 'infinite-scroll', 'ui.bootstrap']);
 
-app.config(function($routeProvider) {
+app.config(function($routeProvider, $locationProvider) {
+    'use strict';
+
    $routeProvider
        .when('/', {
-           controller: 'MainPageController',
-           templateUrl: 'static/partials/cardView.html'
+           controller: 'ContentController',
+           templateUrl: '/static/partials/main.html'
        })
-       .when('/list', {
-           controller: 'MainPageController',
-           templateUrl: 'static/partials/listView.html'
+       .when('/filter/', {
+           controller: 'FilterController',
+           templateUrl: '/static/partials/main.html'
        })
-       .otherwise({redirectTo:'/'})
+       .otherwise({redirectTo:'/'});
+
+    $locationProvider.html5Mode(true).hashPrefix('!');
 });

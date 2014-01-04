@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{{title}}</title>
+    <title>Zapfeeds</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -19,24 +19,25 @@
     <link rel="stylesheet" href="/static/css/animation.css">
   </head>
   <body>
-    {% include 'navbar.html' %}
+    <div data-ng-controller="MainController">
+        {% include 'navbar.html' %}
 
-    <!--AngularJS content is injected here-->
-    <div class="container">
-        <div data-ng-view="" id="ng-view" data-ng-animate="{enter: 'view-enter'}"></div>
+        {% block content %}{% endblock %}
     </div>
 
     <!--Vendor libs, AngularJS, jQuery and bootstrap-->
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular.js"></script>
     <script>window.angular || document.write('<script src="/static/js/vendor/angular.js"><\/script>')</script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script>window.jQuery || document.write('<script src="/static/js/vendor/jquery-1.10.2.min.js"><\/script>')</script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
 
     <!--AngularJS external modules-->
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular-route.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular-cookies.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular-animate.js"></script>
     <script src="/static/js/vendor/ng-infinite-scroll.js"></script>
+    <script src="/static/js/vendor/ui-bootstrap-tpls-0.9.0.min.js"></script>
 
     <!--JS files-->
     <script src="/static/js/constants.js"></script>

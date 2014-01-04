@@ -1,9 +1,10 @@
-<div class="row list-content" data-infinite-scroll="loadMore()" data-track-history=""
-     infinite-scroll-immediate-check="false">
-    <div class="col-md-12 parent_list_content content" data-ng-repeat="content in contents" data-ng-animate="{enter: 'page-enter', leave: 'page-leave'}">
+<div data-ng-include="'/static/partials/spinner.html'"></div>
+<div class="row list-content" data-infinite-scroll="loadMore()"
+     data-infinite-scroll-immediate-check="false" data-track-history="">
+    <div class="col-md-12 parent_list_content content" data-ng-repeat="content in contents" >
         <a href="{{ content.url }}" target="_blank">
-            <div class="img_wrapper">
-                <div class="list_image content-image" data-img-fade-in="content.image_url" style="background-image: url({{ content.image_url }})"></div>
+            <div class="list_image">
+                <div class="list_image content-image" data-img-fade-in="content.image_url"></div>
             </div>
         </a>
         <div class="list_content_container">

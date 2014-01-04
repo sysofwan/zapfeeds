@@ -1,6 +1,6 @@
 <div class="row" data-infinite-scroll="loadMore()" data-track-history=""
-     infinite-scroll-immediate-check="false">
-    <div class="col-md-4 parent_card_content content" data-ng-repeat="content in contents"
+     data-infinite-scroll-immediate-check="false">
+    <div class="col-md-6 col-sm-6 col-xm-12 parent_card_content content" data-ng-repeat="content in contents"
          data-ng-switch="" on="content.image_url" data-ng-animate="{enter: 'page-enter', leave: 'page-leave'}">
         <div class="no_image card_content" data-ng-switch-when="">
             <div class="content-container">
@@ -12,7 +12,7 @@
         <div class="with_image card_content" data-ng-switch-default>
             <a href="{{ content.url }}" target="_blank">
                 <div class="img_wrapper">
-                    <div class="card-image content-image" data-img-fade-in="content.image_url" style="background-image: url({{content.image_url}});"></div>
+                    <div class="card-image content-image" data-img-fade-in="content.image_url"></div>
                 </div>
             </a>
             <div class="content-container">

@@ -1,14 +1,16 @@
 /**
  * Created by sysofwan on 12/24/13.
  */
-
+/* jshint undef: true, unused: false */
+/* global CONSTANTS: true */
 var CONSTANTS = (function() {
-    var max_history = 360;
-    var milliseconds_before_next_request = 3000;
+    "use strict";
+    var maxHistory = 360;
+    var millisecondsBeforeNextRequest = 1500;
     return {
-        MAX_HISTORY: function() {return max_history;},
+        MAX_HISTORY: function() {return maxHistory;},
         MILLISECONDS_BEFORE_NEXT_REQUEST: function() {
-            return milliseconds_before_next_request;
+            return millisecondsBeforeNextRequest;
         }
     };
 })();

@@ -1,21 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-	<div class="row">
-	{% for c in contents %}
-	{% if c.image_url  %}
-		<div class="col-md-4">
-			<div class="img-container">
-				<a href={{c.url}}><img class="content-thumbnail" src={{c.image_url}}></a>
-			</div>
-			<div class="content-container">
-				<h3 class="content-title"><a href={{c.url}}>{{c.title}}</a></h3>
-				<p>{{c.getFriendlyDescription()}}</p>
-			</div>
-		</div>
-	{% endif %}
-	{% endfor %}
-	</div>
+    <div class="container">
+        <div class="col-md-3">{% include 'sidebar.html' %}</div>
+
+        <!--AngularJS content is injected here-->
+        <div data-ng-view="" class="col-md-9" id="ng-view"></div>
+    </div>
 {% endblock %}
 
 
