@@ -24,7 +24,9 @@ app.controller('MainController', function($scope, $cookieStore, $location, conte
     };
 
     $scope.search = function() {
-        $location.url('/filter/?tag=' + $scope.selectedTag);
+        if ($scope.selectedTag) {
+            $location.url('/filter/?tag=' + $scope.selectedTag);
+        }
     };
 });
 
