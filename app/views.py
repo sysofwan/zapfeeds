@@ -15,14 +15,9 @@ def login():
         form = form)
 
 @app.route('/')
-@app.route('/list/')
-@app.route('/grid/')
 @app.route('/filter/')
-@app.route('/list/filter/')
-@app.route('/grid/filter/')
 def main():
-    return render_template("main.html", all_tags=Tag.get_all_tags(),
-                           content_types=ContentType.get_content_types_with_contents())
+    return render_template("main.html", all_tags=Tag.get_all_tags())
 
 @app.route('/favicon.ico')
 def favicon():

@@ -2,9 +2,9 @@
     <div class="section">
         <div class="section-heading">Filter</div>
         <ul class="nav nav-stacked">
-            {% for type in content_types %}
-            <li><a href="/filter/?type={{ type.type_string }}">{{ type.type_string }}</a></li>
-            {% endfor %}
+            <li><a href="/filter/?type=article">article</a></li>
+            <li><a href="/filter/?type=video">video</a></li>
+            <li><a href="/filter/?type=image">image</a></li>
         </ul>
     </div>
     {#<div class="section">
