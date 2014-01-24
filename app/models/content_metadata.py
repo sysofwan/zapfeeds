@@ -13,10 +13,10 @@ class Tag(db.Model):
     contentSource = db.relationship('ContentSource', backref='tag')
 
     @classmethod
-    def getOrCreateTag(cls, session, tagname):
+    def get_or_create_tag(cls, session, tagname):
         """Returns a tag with given tagname if it exists. Else, creates
         a new tag, add it to session and returns it"""
-        tag = cls.getTag(tagname)
+        tag = cls.get_tag(tagname)
         if tag:
             return tag
         tag = cls(tag_string=tagname)
@@ -25,7 +25,7 @@ class Tag(db.Model):
         return tag
 
     @classmethod
-    def getTag(cls, tagname):
+    def get_tag(cls, tagname):
         return cls.query.filter(cls.tag_string == tagname).first()
 
     @classmethod
@@ -56,19 +56,19 @@ class ContentType(db.Model):
     contents = db.relationship('Content', backref='type')
 
     @classmethod
-    def getOrCreateContentType(cls, session, typename):
+    def get_or_create_content_type(cls, session, typename):
         """Returns ContentType with given type name if it exists. Else, creates
         a new ContentType, add it to session and returns it"""
-        cType = cls.getContentType(typename)
-        if cType:
-            return cType
-        cType = cls(type_string=typename)
-        session.add(cType)
+        c_type = cls.get_content_type(typename)
+        if c_type:
+            return c_type
+        c_type = cls(type_string=typename)
+        session.add(c_type)
         session.commit()
-        return cType
+        return c_type
 
     @classmethod
-    def getContentType(cls, typename):
+    def get_content_type(cls, typename):
         return cls.query.filter(cls.type_string == typename).first()
 
     @classmethod
@@ -86,7 +86,13 @@ class SocialShare(db.Model):
     upvotes = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime(), nullable=False)
 
-    content_id = db.Column(db.Integer, db.ForeignKey('contents.id'))
+    content_id = db.Column(db.Integer, db.ForeignKey('contents.id'), nullable=False)
+
+    def __init__(self, facebook_shares=0, retweets=0, upvotes=0):
+        self.timestamp = datetime.utcnow()
+        self.facebook_shares = facebook_shares
+        self.retweets = retweets
+        self.upvotes = upvotes
 
     @classmethod
     def createSocialShare(cls, session, facebbok, twitter, reddit):
@@ -104,22 +110,22 @@ class SiteName(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     site_name = db.Column(db.String(128), index=True, nullable=False, unique=True)
 
-    contents = db.relationship('Content', backref='siteName')
+    contents = db.relationship('Content', backref='site_name')
 
     @classmethod
-    def getOrCreateSiteName(cls, session, siteName):
+    def get_or_create_site_name(cls, session, site_name):
         """Returns SiteName with given type name if it exists. Else, creates
         a new SiteName, add it to session and returns it"""
-        sName = cls.getSiteName(siteName)
-        if sName:
-            return sName
-        sName = cls(site_name=siteName)
-        session.add(sName)
+        s_name_obj = cls.get_site_name(site_name)
+        if s_name_obj:
+            return s_name_obj
+        s_name_obj = cls(site_name=site_name)
+        session.add(s_name_obj)
         session.commit()
-        return sName
+        return s_name_obj
 
     @classmethod
-    def getSiteName(cls, siteName):
+    def get_site_name(cls, siteName):
         return cls.query.filter(cls.site_name == siteName).first()
 
 
@@ -134,19 +140,23 @@ class ContentSource(db.Model):
     contents = db.relationship('Content', backref='source')
 
     @classmethod
-    def getOrCreateContentSource(cls, session, url, tag=None):
-        cSource = cls.getContentSource(url)
+    def get_or_create_content_source(cls, session, url, tag=None):
+        cSource = cls.get_content_source(url)
         if cSource:
             return cSource
         cSource = cls(url=url)
         if tag:
-            tag = Tag.getOrCreateTag(session, tag)
+            tag = Tag.get_or_create_tag(session, tag)
             cSource.tag = tag
         session.add(cSource)
         session.commit()
         return cSource
 
     @classmethod
-    def getContentSource(cls, url):
+    def get_content_source(cls, url):
         return cls.query.filter(cls.url == url).first()
+
+    @classmethod
+    def get_all_sources(cls):
+        return cls.query.all()
 

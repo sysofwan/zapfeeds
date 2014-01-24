@@ -2,7 +2,7 @@ import os
 from flask import render_template, flash, redirect, send_from_directory, g
 from app import app
 from forms import LoginForm
-from app.models.contentMeta import ContentType, Tag
+from app.models.content_metadata import ContentType, Tag
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():

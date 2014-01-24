@@ -1,14 +1,16 @@
+import time
+import json
+from urlparse import urlparse
+import pickle
+import unicodedata
+
 import feedparser
 import requests
-import time
 from bs4 import BeautifulSoup
-import json
 from app.models.Content import Content
-from urlparse import urlparse
 from boilerpipe.extract import Extractor
-import pickle
-from tagger import Reader, Stemmer, Rater, Tagger
-import unicodedata
+from app.background_services.aggregation.tagger import Reader, Stemmer, Rater, Tagger
+
 
 RSS = ['http://rss.cnn.com/rss/cnn_topstories.rss',
        'http://feeds.gawker.com/lifehacker/full',

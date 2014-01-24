@@ -34,6 +34,7 @@ app.factory('contentFactory', function($http, $cookieStore) {
                 console.log('Error with rest API:' + errMsg);
             });
     };
+
     return factory;
 });
 

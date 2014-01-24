@@ -41,4 +41,6 @@ flask
 db_repository
 temp
 .idea
+search.db
 *~
+*.log

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models.Content import Content
-from app.models.contentMeta import Tag
+from app.models.content_metadata import Tag
 import json
 import urllib2
 import datetime
@@ -30,13 +30,15 @@ def get_top_content():
 def get_filtered_content(page):
     types = request.args.getlist('type')
     tags = request.args.getlist('tag')
+    query = request.args.get('query')
     contents = []
     if tags:
         contents.extend([content.fp_serialize for content in Content.get_top_tag_filtered(page, tags)])
-    if types:
+    elif types:
         contents.extend([content.fp_serialize for content in Content.get_top_type_filtered(page, types)])
-    response = jsonify({'results': contents})
-    return response
+    elif query:
+        contents.extend([content.fp_serialize for content in Content.get_top_for_query(query, page)])
+    return jsonify({'results': contents})
 
 
 @rest.route('/meta/alltags', methods=['GET'])

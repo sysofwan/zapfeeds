@@ -127,6 +127,11 @@ div.content-image {
     transition: opacity 1s;
 }
 
+.content-container .content-meta {
+    font-size: 11px;
+    color: #8a8a8a;
+}
+
 /*============================================================================
   Styles for card view
   ============================================================================*/
@@ -141,7 +146,7 @@ div.parent_card_content {
 }
 
 div.card_content {
-    height: 350px;
+    height: 365px;
     overflow: hidden;
     border-radius: 10px;
     width: 100%;
@@ -161,7 +166,7 @@ div.no_image {
 }
 
 div.content-container {
-    height: 150px;
+    height: 165px;
     overflow: hidden;
     margin-bottom: 15px;
     padding: 3px 8px 8px 8px;
@@ -184,10 +189,14 @@ h3.content-title {
     margin-top: 5px;
     font-size: 18px;
     font-weight: bolder;
+    line-height: 20px;
+    max-height: 60px;
+    overflow: hidden;
+    margin-bottom: 4px;
 }
 
 .content-container div.description {
-    margin-top: 8px;
+    margin-top: 4px;
     font-size: 13px;
     line-height: 18px;
     color: #515151;

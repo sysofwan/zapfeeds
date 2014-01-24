@@ -1,5 +1,5 @@
 #!flask/bin/python
-from app.models.contentMeta import ContentSource, ContentType
+from app.models.content_metadata import ContentSource, ContentType
 from app import db
 
 sources = [
@@ -40,7 +40,11 @@ sources = [
     {'url': 'http://rss.feedsportal.com/c/35344/f/661517/index.rss', 'tag': 'news'},
     {'url': 'http://www.newsvine.com/_feeds/rss2/index', 'tag': 'news'},
     {'url': 'http://www.reddit.com/r/news/new/.rss?limit=100', 'tag': 'news'},
-    {'url': 'http://www.reddit.com/r/worldnews/new/.rss?limit=100', 'tag': 'news'}
+    {'url': 'http://www.reddit.com/r/worldnews/new/.rss?limit=100', 'tag': 'news'},
+    {'url': 'http://www.buzzfeed.com/index.xml'},
+    {'url': 'http://www.buzzfeed.com/badge/time-waster.xml'},
+    {'url': 'http://www.buzzfeed.com/videos.xml', 'tag': 'video'},
+    {'url': 'http://www.buzzfeed.com/pics.xml', 'tag': 'picture'}
 ]
 
 types = ['article', 'video', 'blog', 'website', 'book', 'music', 'image']
@@ -49,12 +53,12 @@ types = ['article', 'video', 'blog', 'website', 'book', 'music', 'image']
 def populate_sources():
     for source in sources:
         if 'tag' in source:
-            ContentSource.getOrCreateContentSource(db.session, source['url'], source['tag'])
+            ContentSource.get_or_create_content_source(db.session, source['url'], source['tag'])
         else:
-            ContentSource.getOrCreateContentSource(db.session, source['url'])
+            ContentSource.get_or_create_content_source(db.session, source['url'])
 
     for type_name in types:
-        ContentType.getOrCreateContentType(db.session, type_name)
+        ContentType.get_or_create_content_type(db.session, type_name)
 
 if __name__ == '__main__':
     populate_sources()

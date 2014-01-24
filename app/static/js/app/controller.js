@@ -1,4 +1,4 @@
-app.controller('MainController', function($scope, $cookieStore, $location, contentMetaFactory) {
+app.controller('MainController', function($scope, $cookieStore, $location) {
     'use strict';
     var templateUrlGenerator = function() {
         var preferred = $cookieStore.get('view');
@@ -10,11 +10,7 @@ app.controller('MainController', function($scope, $cookieStore, $location, conte
         return '/static/partials/cardView.html';
     };
 
-    contentMetaFactory.getAllTags(function(results) {
-        $scope.tags = results;
-    });
-
-    $scope.selectedTag = null;
+    $scope.query = null;
 
     $scope.templateUrl = templateUrlGenerator();
 
@@ -23,10 +19,12 @@ app.controller('MainController', function($scope, $cookieStore, $location, conte
         $scope.templateUrl = templateUrlGenerator();
     };
 
-    $scope.search = function() {
-        if ($scope.selectedTag) {
-            $location.url('/filter/?tag=' + $scope.selectedTag);
-        }
+    $scope.tagSearch = function() {
+        $location.url('/filter/?tag=' + $scope.query);
+    };
+
+    $scope.textSearch = function() {
+        $location.url('/filter/?query=' + $scope.query);
     };
 });
 
@@ -58,8 +56,10 @@ app.controller('ContentController', function($scope, contentFactory) {
 app.controller('FilterController', function($scope, contentFactory, $routeParams) {
     'use strict';
     var page = 0;
+    var lastPage = false;
     var type = $routeParams.type;
     var tag = $routeParams.tag;
+    var query = $routeParams.query;
     $scope.contents = [];
     var lastUpdate = (new Date()).getTime();
 
@@ -67,15 +67,19 @@ app.controller('FilterController', function($scope, contentFactory, $routeParams
         $scope.updating = true;
         ++page;
         contentFactory.filter(function(results) {
-            $scope.contents = $scope.contents.concat(results);
             $scope.updating = false;
-        }, page, {tag: tag, type: type});
+            if (!results.length) {
+                lastPage = true;
+                return;
+            }
+            $scope.contents = $scope.contents.concat(results);
+        }, page, {tag: tag, type: type, query:query});
     };
 
     $scope.loadMore = function() {
         var currTime = (new Date()).getTime();
 
-        if (currTime - CONSTANTS.MILLISECONDS_BEFORE_NEXT_REQUEST() > lastUpdate) {
+        if (currTime - CONSTANTS.MILLISECONDS_BEFORE_NEXT_REQUEST() > lastUpdate && !lastPage) {
             lastUpdate = currTime;
             loadContents();
         }

@@ -4,9 +4,17 @@
          data-ng-switch="" on="content.image_url" data-ng-animate="{enter: 'page-enter', leave: 'page-leave'}">
         <div class="no_image card_content" data-ng-switch-when="">
             <div class="content-container">
-               <h3 class="content-title"><a href="{{content.url}}" target="_blank">{{content.title}}</a></h3>
-               <div class="description">{{content.description}}</div>
-           </div>
+                <h3 class="content-title"><a href="{{ content.url }}" target="_blank">{{ content.title }}</a></h3>
+                <div class="content-meta">
+                    <span class="source">{{ content.site_name }}</span>
+                </div>
+                <div class="description">{{ content.description }}</div>
+                <!--<div class="tags">
+                   <span data-ng-repeat="tag in content.tags">
+                       <a href="/filter/?tag={{ tag }}">{{ tag }}</a>
+                   </span>
+                </div>-->
+            </div>
         </div>
 
         <div class="with_image card_content" data-ng-switch-default>
@@ -15,9 +23,18 @@
                     <div class="card-image content-image" data-img-fade-in="content.image_url"></div>
                 </div>
             </a>
+
             <div class="content-container">
-                <h3 class="content-title"><a href="{{content.url}}" target="_blank">{{content.title}}</a></h3>
-                <div class="description">{{content.description}}</div>
+                <h3 class="content-title"><a href="{{ content.url }}" target="_blank">{{ content.title }}</a></h3>
+                <div class="content-meta">
+                    <span class="source">{{ content.site_name }}</span>
+                </div>
+                <div class="description">{{ content.description }}</div>
+            <!--<div class="tags">
+                   <span data-ng-repeat="tag in content.tags">
+                       <a href="/filter/?tag={{ tag }}">{{ tag }}</a>
+                   </span>
+            </div>-->
             </div>
         </div>
     </div>

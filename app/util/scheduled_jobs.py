@@ -4,8 +4,8 @@ from get_data_reddit import rss_data
 from social_data import social_count
 from app import db
 from app.models.Content import Content
-from app.models.contentMeta import SocialShare, ContentSource
-from rank import score
+from app.models.content_metadata import SocialShare, ContentSource
+from app.background_services.ranking.rank import score
 
 sched = Scheduler()
 

@@ -6,5 +6,6 @@ if os.environ.get('DATABASE_URL') is None:
 else:
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
 SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
+WHOOSH_BASE = os.path.join(basedir, 'search.db')
 CSRF_ENABLED = True
 SECRET_KEY = 'it-is-a-secret'
