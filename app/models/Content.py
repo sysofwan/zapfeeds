@@ -186,7 +186,6 @@ class Content(db.Model):
             'id': self.id,
             'url': self.url,
             'title': self.title,
-            'text': self.text,
             'timestamp': self.timestamp,
             'description': self.description,
             'icon_url': self.icon_url,
@@ -194,7 +193,7 @@ class Content(db.Model):
         }
         if self.type:
             serialized['type'] = self.type.type_string
-        if self.siteName:
+        if self.site_name:
             serialized['site_name'] = self.site_name.site_name
         if self.image_url:
             serialized['image_url'] = self.image_url
