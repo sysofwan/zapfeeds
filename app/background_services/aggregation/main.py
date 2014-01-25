@@ -77,7 +77,7 @@ def generate_content(content_data, source_id, session):
 
     content.tags = get_tags(content_data, session)
     content.site_name = get_site_name(content_data.soup, session)
-    content.type = get_type(content_data.soup)
+    content.type = get_type(content_data)
 
     return content
 
@@ -199,8 +199,11 @@ def get_site_name(soup, session):
         return SiteName.get_or_create_site_name(session, site_name)
     return None
 
-def get_type(soup):
-    type_str = get_og_property(soup, 'type')
+def get_type(content_data):
+    if 'imgur.com' in content_data.url:
+        type_str = 'image'
+    else:
+        type_str = get_og_property(content_data.soup, 'type')
     if type_str:
         type_str = type_str.split('.')[0]
         return ContentType.get_content_type(type_str)
