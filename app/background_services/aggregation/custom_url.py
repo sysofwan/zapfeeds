@@ -1,6 +1,20 @@
 import requests
 from bs4 import BeautifulSoup
 
+
+def get_raw_url(raw_url):
+    if is_reddit(raw_url):
+        raw_url = get_reddit_raw_url(raw_url)
+    if is_fark(raw_url):
+        raw_url = get_raw_url_for_fark(raw_url)
+    if is_newsvine(raw_url):
+        raw_url = get_raw_url_for_newsvine(raw_url)
+    if is_vitals(raw_url):
+        raw_url = get_raw_url_for_vitals(raw_url)
+    if is_imgur_image(raw_url):
+        raw_url = get_imgur_image_raw_url(raw_url)
+    return raw_url
+
 def is_fark(url):
     return url.startswith('http://rss.feedsportal.com/c/35344/f/661517/')
 

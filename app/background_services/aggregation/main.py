@@ -6,10 +6,7 @@ from time import mktime
 from app.models.Content import Content, Tag, SiteName, ContentType
 from util import join_root_with_domain, get_og_property, get_meta_property, \
     get_twitter_property, clean_html, htmlParser
-from  app.background_services.aggregation.custom_url import is_newsvine, is_fark, is_vitals, is_imgur_image, \
-    get_imgur_image_raw_url, get_raw_url_for_fark, \
-    get_raw_url_for_newsvine, get_raw_url_for_vitals, get_reddit_raw_url, \
-    is_reddit
+from  app.background_services.aggregation.custom_url import get_raw_url
 import feedparser
 from bs4 import BeautifulSoup
 from tagger import Reader, Stemmer, Rater, Tagger
@@ -59,7 +56,7 @@ def get_content_from_feed(feed, source_id, session):
     Side effects:   Implicitly creates tag and site name database entry
                     if it does not exist
     """
-    raw_url = get_raw_url(feed)
+    raw_url = get_raw_url(feed.link)
     content_data = ContentData(raw_url, feed)
 
     if is_duplicate_url(content_data.url):
@@ -104,20 +101,6 @@ def get_feed_id(feed):
     except:
         feed_id = feed.link
     return feed_id
-
-def get_raw_url(feed):
-    raw_url = feed.link
-    if is_reddit(raw_url):
-        raw_url = get_reddit_raw_url(raw_url)
-    if is_fark(raw_url):
-        raw_url = get_raw_url_for_fark(raw_url)
-    if is_newsvine(raw_url):
-        raw_url = get_raw_url_for_newsvine(raw_url)
-    if is_vitals(raw_url):
-        raw_url = get_raw_url_for_vitals(raw_url)
-    if is_imgur_image(raw_url):
-        raw_url = get_imgur_image_raw_url(raw_url)
-    return raw_url
 
 def get_url(page_request, soup):
     url = get_og_property(soup, 'url')
