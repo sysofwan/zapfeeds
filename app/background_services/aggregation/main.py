@@ -104,7 +104,7 @@ def get_feed_id(feed):
 
 def get_url(page_request, soup):
     url = get_og_property(soup, 'url')
-    if not url:
+    if not url or not url.startswith('http'):
         # throw out trailing id
         url = page_request.url.split('#')[0]
     return url
