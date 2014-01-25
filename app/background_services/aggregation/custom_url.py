@@ -18,7 +18,8 @@ def is_reddit(url):
 
 def get_raw_url_for_fark(url):
     soup = BeautifulSoup(requests.get(url).text)
-    return soup.find('a', {'class': 'outbound_link'})['href']
+    url = soup.find('a', {'class': 'outbound_link'})['href']
+    return url[url.rfind('http'):]
 
 def get_raw_url_for_newsvine(url):
     soup = BeautifulSoup(requests.get(url).text)
