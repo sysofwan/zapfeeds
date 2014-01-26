@@ -201,7 +201,7 @@ def get_tagging_text(content_data):
     title_text = content_data.title
     description_text = content_data.description
     body_text = content_data.content_text
-    #increase weight for title and describe
+    #increase weight for title and description
     text_string = [title_text]*2 + [description_text]*2 + [body_text]
     text_string = ' '.join(text_string)
     text_string = unicodedata.normalize('NFKD', text_string).encode('ascii', 'ignore')
