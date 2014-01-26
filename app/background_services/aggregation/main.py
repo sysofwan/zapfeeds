@@ -177,12 +177,7 @@ def clean_tags(tags):
     return [tag for tag in tags if ( '--' not in tag and 2 < len(tag) < 20)]
 
 def auto_tagger(content_data):
-    title_text = content_data.title
-    description_text = content_data.description
-    body_text = str(get_tagging_text(content_data))
-    #add more weight to title and description vs body
-    text = [title_text]*2 + [description_text]*2 + [body_text]
-    text = ' '.join(text)
+    text = get_tagging_text(content_data)
     try:
         tags = auto_tag(text, 3)
     except Exception as e:
@@ -203,11 +198,14 @@ def extract_article(html_text):
     return text_string
 
 def get_tagging_text(content_data):
-    text_string = content_data.content_text
-    text_string = text_string if len(text_string) > len(content_data.description) else content_data.description
-    text_string = text_string if len(text_string) > len(content_data.title) else content_data.title
+    title_text = content_data.title
+    description_text = content_data.description
+    body_text = content_data.content_text
+    #increase weight for title and describe
+    text_string = [title_text]*2 + [description_text]*2 + [body_text]
+    text_string = ' '.join(text_string)
     text_string = unicodedata.normalize('NFKD', text_string).encode('ascii', 'ignore')
-    return text_string
+    return str(text_string)
 
 def get_site_name(soup, session):
     site_name = get_og_property(soup, 'site_name')
