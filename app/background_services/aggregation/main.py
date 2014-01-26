@@ -30,10 +30,17 @@ class ContentData():
         self.content_text = extract_article(self.page_req.text)
         self.title = get_title(self.soup, self.feed)
         self.description = get_description(self.soup, self.feed)
-
+        self.timestamp = get_timestamp(self.feed)
+        self.image_url = get_image_url(self.soup)
+        self.icon_url = get_icon_url(self.soup, self.url)
+        self.type = get_type(self.url, self.soup)
+        self.raw_html = self.page_req.text
 
 
 def get_primary_content_data(rss_url, source_id, session):
+    """
+    @TODO: check for english articles only
+    """
     feed_data = feedparser.parse(rss_url)
 
     for feed in feed_data.entries:
@@ -70,14 +77,14 @@ def generate_content(content_data, source_id, session):
     content.feed_id = get_feed_id(content_data.feed)
     content.title = content_data.title
     content.description = content_data.description
-    content.image_url = get_image_url(content_data.soup)
-    content.icon_url = get_icon_url(content_data)
-    content.timestamp = get_timestamp(content_data.feed)
+    content.image_url = content_data.image_url
+    content.icon_url = content_data.icon_url
+    content.timestamp = content_data.timestamp
     content.content_source_id = source_id
 
     content.tags = get_tags(content_data, session)
     content.site_name = get_site_name(content_data.soup, session)
-    content.type = get_type(content_data)
+    content.type = content_data.type
 
     return content
 
@@ -141,13 +148,13 @@ def get_image_url(soup):
     if tw_image:
         return tw_image
 
-def get_icon_url(content_data):
-    icon_node = content_data.soup.find('link', {'rel': 'icon'})
+def get_icon_url(soup, url):
+    icon_node = soup.find('link', {'rel': 'icon'})
     if not icon_node:
-        icon_node = content_data.soup.find('link', {'rel': 'shortcut icon'})
+        icon_node = soup.find('link', {'rel': 'shortcut icon'})
     if not icon_node:
-        icon_node = content_data.soup.find('link', {'rel': 'Shortcut Icon'})
-    return get_icon_url_from_node(icon_node, content_data.url)
+        icon_node = soup.find('link', {'rel': 'Shortcut Icon'})
+    return get_icon_url_from_node(icon_node, url)
 
 def get_timestamp(feed):
     return datetime.fromtimestamp(mktime(feed.published_parsed))
@@ -170,10 +177,17 @@ def clean_tags(tags):
     return [tag for tag in tags if ( '--' not in tag and 2 < len(tag) < 20)]
 
 def auto_tagger(content_data):
-    text_string = get_tagging_text(content_data)
+    title_text = content_data.title
+    description_text = content_data.description
+    body_text = str(get_tagging_text(content_data))
+    #add more weight to title and description vs body
+    text = [title_text]*2 + [description_text]*2 + [body_text]
+    text = ' '.join(text)
     try:
-        tags = auto_tag(str(text_string), 4)
-    except:
+        tags = auto_tag(text, 3)
+    except Exception as e:
+        logger.error('Error auto tagging data content id: %s. Exception: %s, %s',
+                     content_data.id, e.__class__.__name__, e)
         return []
     return clean_tags([str(tag) for tag in tags])
 
@@ -182,7 +196,9 @@ def extract_article(html_text):
         extractor = Extractor(extractor='ArticleExtractor', html=html_text)
         text_string = extractor.getText()
         text_string = htmlParser.unescape(text_string)
-    except:
+    except Exception as e:
+        logger.error('Error extracting article html: %s  \nException: %s, %s',
+                     html_text, e.__class__.__name__, e)
         text_string = ''
     return text_string
 
@@ -199,11 +215,11 @@ def get_site_name(soup, session):
         return SiteName.get_or_create_site_name(session, site_name)
     return None
 
-def get_type(content_data):
-    if 'imgur.com' in content_data.url:
+def get_type(url, soup):
+    if 'imgur.com' in url:
         type_str = 'image'
     else:
-        type_str = get_og_property(content_data.soup, 'type')
+        type_str = get_og_property(soup, 'type')
     if type_str:
         type_str = type_str.split('.')[0]
         return ContentType.get_content_type(type_str)
