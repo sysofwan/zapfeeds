@@ -30,8 +30,6 @@ class ContentData():
         self.content_text = extract_article(self.page_req.text)
         self.title = get_title(self.soup, self.feed)
         self.description = get_description(self.soup, self.feed)
-        self.ffff = ''
-
         self.timestamp = get_timestamp(self.feed)
         self.image_url = get_image_url(self.soup)
         self.icon_url = get_icon_url(self.soup, self.url)
