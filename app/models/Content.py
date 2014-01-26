@@ -30,6 +30,7 @@ class Content(db.Model):
     type_id = db.Column(db.Integer, db.ForeignKey('content_types.id'), index=True)
     site_name_id = db.Column(db.Integer, db.ForeignKey('site_names.id'), index=True)
     content_source_id = db.Column(db.Integer, db.ForeignKey('content_sources.id'), index=True)
+    feature_extraction = db.Column(db.String())
 
     social_shares = db.relationship('SocialShare', backref='content')
 
