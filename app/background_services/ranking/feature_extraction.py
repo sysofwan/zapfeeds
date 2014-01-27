@@ -1,7 +1,11 @@
+import json
 from algorithm import *
 
 
 class Extract():
+    """
+    @todo: check num of features
+    """
     def __init__(self, content_data):
         self.anchor = get_anchor_feature(content_data.soup)
         self.body = get_body_feature(content_data.soup)
@@ -14,10 +18,10 @@ class Extract():
         self.timestamp = get_timestamp_feature(content_data.timestamp)
         self.title = get_title_feature(content_data.title)
         self.url = get_url_feature(content_data.url)
-        temp_data = self.data_for_ratio()
-        self.ratio = get_ratio_feature(temp_data)
+        ratio_temp = self.ratio_data()
+        self.ratio = get_ratio_feature(ratio_temp)
 
-    def data_for_ratio(self):
+    def ratio_data(self):
         data_dict = dict(self.body.items() +
                          self.title.items() +
                          self.description.items() +
@@ -40,6 +44,12 @@ class Extract():
 
         return arranged
 
-    def get_feature(self):
+    def get_feature(self, convert_string=False):
         features = self.aggregate_feature()
-        return self.arrange_feature(features)
+        features = self.arrange_feature(features)
+        if convert_string:
+            features = json.dumps(features)
+        return features
+
+
+

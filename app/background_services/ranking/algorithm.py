@@ -5,18 +5,11 @@
 import psycopg2
 from boilerpipe.extract import Extractor
 from bs4 import BeautifulSoup
-from pprint import pprint
-from sklearn import preprocessing
-from sklearn.cross_validation import KFold
-from sklearn.metrics import mean_absolute_error
-import random
 import unicodedata
 import string
 import json
 import pickle
 import tldextract
-import numpy
-import csv
 from textblob import TextBlob
 from urlparse import urlparse
 from nltk.corpus import stopwords
@@ -24,7 +17,6 @@ from nltk.tokenize.punkt import PunktWordTokenizer
 from nltk.tokenize import TreebankWordTokenizer
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize, sent_tokenize
-from tagger import Reader, Stemmer, Rater, Tagger
 
 
 #==============================================================================
@@ -36,11 +28,6 @@ STOPWORD = stopwords.words('english')
 
 # punctutations in string library
 PUNCT = [i for i in string.punctuation]
-
-
-# apresta auto tag
-weights = pickle.load(open('data/dict.pkl', 'rb'))
-auto_tag = Tagger(Reader(), Stemmer(), Rater(weights))
 
 #from nltk.stem.wordnet import WordNetLemmatizer
 #lemmatizer = WordNetLemmatizer()
@@ -833,7 +820,7 @@ def view_data(content_id=0, content_data={}):
                   content_type.items())
 
     if content_id or social_data:
-        result = (result.items() + social.items())
+        result = dict(result.items() + social.items())
 
     return result
 

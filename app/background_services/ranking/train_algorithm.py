@@ -1,4 +1,12 @@
+import csv
+import numpy
 from algorithm import *
+from pprint import pprint
+from pprint import pprint
+from sklearn import preprocessing
+from sklearn.cross_validation import KFold
+from sklearn.metrics import mean_absolute_error
+import random
 
 FEATURE = ['target',
            'anchor_adj',
@@ -157,55 +165,6 @@ FEATURE = ['target',
            'url_word_length']
 
 
-def id_from_database():
-    query = '''
-            select
-            id
-            from
-            contents
-            order by
-            id asc
-            '''
-
-    data = query_database(query)
-    ids = []
-    for row in data:
-        ids.append(row[0])
-    return ids
-
-
-CONTENT_TYPE = ['url', 'title', 'timestamp', 'description', 'thumbnail', 'icon_url', 'type_id', 'raw_html']
-
-
-def get_content_from_id(content_id):
-    query = '''
-            select
-            url, title, timestamp, description, image_url, icon_url, type_id, raw_html
-            from
-            contents
-            where
-            id=
-            '''
-    query += str(content_id)
-    data = query_database(query)
-    data_dict = {}
-    for row in data:
-        for index in range(len(CONTENT_TYPE)):
-            data_dict[CONTENT_TYPE[index]] = row[index]
-
-    return data_dict
-
-
-def test_extract_feature():
-    ids = id_from_database()
-    result = []
-    for elt in ids:
-        data_dict = get_content_from_id(elt)
-        result.append(extract_feature(content_data=data_dict))
-
-    return result
-
-
 def extract_feature(content_id=0, content_data={}, train=False):
     """
     @param content_id: integer from database
@@ -261,4 +220,130 @@ def extract_feature(content_id=0, content_data={}, train=False):
     pprint(result)
 
     return result
+
+
+def id_from_database():
+    query = '''
+            select
+            id
+            from
+            contents
+            order by
+            id asc
+            '''
+
+    data = query_database(query)
+    ids = []
+    for row in data:
+        ids.append(row[0])
+    return ids
+
+
+CONTENT_TYPE = ['url', 'title', 'timestamp', 'description', 'thumbnail', 'icon_url', 'type_id', 'raw_html']
+
+
+def get_content_from_id(content_id):
+    query = '''
+            select
+            url, title, timestamp, description, image_url, icon_url, type_id, raw_html
+            from
+            contents
+            where
+            id=
+            '''
+    query += str(content_id)
+    data = query_database(query)
+    data_dict = {}
+    for row in data:
+        for index in range(len(CONTENT_TYPE)):
+            data_dict[CONTENT_TYPE[index]] = row[index]
+
+    return data_dict
+
+
+def test_extract_feature_content_data(id_range=[]):
+    if id_range:
+        ids = id_range
+    else:
+        ids = id_from_database()
+    data_list = []
+    for elt in ids:
+        data_dict = get_content_from_id(elt)
+        temp_dict = extract_feature(content_data=data_dict)
+        if len(temp_dict) == (len(FEATURE) - 2):
+            data_list.append(temp_dict)
+
+    return data_list
+
+
+def test_extract_feature_content_id(id_range=[]):
+    if id_range:
+        ids = id_range
+    else:
+        ids = id_from_database()
+    data_list = []
+    for num in ids:
+        temp_dict = extract_feature(content_id=num, train=True)
+        data_temp = [temp_dict[feat] for feat in FEATURE]
+        if len(data_temp) == len(FEATURE):
+            data_list.append(data_temp)
+    data_list.insert(0, FEATURE)
+
+    return data_list
+
+
+def test_algorithm(x, y, clf, cv_folds=4):
+    score = []
+    mse = []
+    cv = KFold(len(y), n_folds=cv_folds)
+    for train, target in cv:
+        print '\ntraining algorithm...'
+        clf.fit(x[train], y[train])
+        score_temp = clf.score(x[target], y[target])
+        mse_temp = mean_absolute_error(y[target], clf.predict(x[target]))
+        print 'score: ', score_temp
+        print 'mse: ', mse_temp
+        score.append(score_temp)
+        mse.append(mse_temp)
+    print '\n============stats============\n'
+    print 'score mean: ', numpy.mean(numpy.array(score))
+    print 'score median: ', numpy.median(numpy.array(score))
+    print 'mse mean: ', numpy.mean(numpy.array(mse))
+    print 'mse median: ', numpy.median(numpy.array(mse))
+
+    return
+
+
+def load_csv_data(filename):
+    with open('data/' + filename, 'rU') as fs:
+        data = [row for row in csv.reader(fs)]
+
+    header = data[0]
+    body_data = [[eval(col) for col in row] for row in data[1:]]
+
+    return [header] + body_data[:]
+
+
+def data_to_array(data, scale_data=False):
+    x = []
+    y = []
+    body_data = data[1:]
+    for row in body_data:
+        x.append(row[1:])
+        y.append(row[0])
+
+    x = numpy.array(x)
+    y = numpy.array(y)
+
+    if scale_data:
+        x = preprocessing.scale(x)
+
+    return x, y
+
+
+
+
+
+
+
 

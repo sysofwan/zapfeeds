@@ -18,7 +18,8 @@ import time
 import random
 from urlparse import urlparse
 from algorithm import *
-from social_data import social_count
+from social_data import get_total_shares
+from app.background_services.aggregation.main import auto_tag
 
 
 #==============================================================================
@@ -485,7 +486,7 @@ def ner_stats(pos_list, social_likes='', filename=''):
 def url_domain_like(domain_list, filename=False):
     url_dict = {}
     for url in domain_list:
-        temp_dict = social_count(url)
+        temp_dict = get_total_shares(url)
         url_dict[url] = sum([row[1] for row in temp_dict.items()])
 
     if filename:

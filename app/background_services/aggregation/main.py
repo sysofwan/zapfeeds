@@ -13,6 +13,7 @@ from tagger import Reader, Stemmer, Rater, Tagger
 from boilerpipe.extract import Extractor
 from app.background_services import reqSession
 import logging
+from app.background_services.ranking.feature_extraction import Extract
 
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,9 @@ auto_tag = Tagger(Reader(), Stemmer(), Rater(weights))
 
 
 class ContentData():
+    """
+    @TODO: check requests status code 200
+    """
     def __init__(self, raw_url, feed):
         self.raw_url = raw_url
         self.feed = feed
@@ -85,6 +89,9 @@ def generate_content(content_data, source_id, session):
     content.tags = get_tags(content_data, session)
     content.site_name = get_site_name(content_data.soup, session)
     content.type = content_data.type
+
+    features = Extract(content_data)
+    content.feature_extraction = features.get_feature(convert_string=True)
 
     return content
 

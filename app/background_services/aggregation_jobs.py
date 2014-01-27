@@ -1,5 +1,6 @@
 import logging
 
+from ranking.predict_social_shares import *
 from app.background_services.aggregation.main import get_primary_content_data
 from app.models.content_metadata import ContentSource
 from app.models.Content import Content
@@ -35,6 +36,7 @@ def populate_social_count():
         social_share.content_id = content.id
         session.add(social_share)
         session.add(content)
+        content.predicted_shares = predicted_shares(social_share)
     session.commit()
 
 def populate_real_shares():
@@ -53,4 +55,12 @@ def rank_contents():
         content.rank = rank_content(content)
         session.add(content)
     session.commit()
+
+
+
+
+
+
+
+
 
