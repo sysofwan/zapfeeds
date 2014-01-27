@@ -2,7 +2,6 @@ import csv
 import numpy
 from algorithm import *
 from pprint import pprint
-from pprint import pprint
 from sklearn import preprocessing
 from sklearn.cross_validation import KFold
 from sklearn.metrics import mean_absolute_error
@@ -239,13 +238,15 @@ def id_from_database():
     return ids
 
 
-CONTENT_TYPE = ['url', 'title', 'timestamp', 'description', 'thumbnail', 'icon_url', 'type_id', 'raw_html']
+CONTENT_TYPE = ['url', 'title', 'timestamp', 'description',
+                'thumbnail', 'icon_url', 'type_id', 'raw_html']
 
 
 def get_content_from_id(content_id):
     query = '''
             select
-            url, title, timestamp, description, image_url, icon_url, type_id, raw_html
+            url, title, timestamp, description, image_url,
+            icon_url, type_id, raw_html
             from
             contents
             where
@@ -270,6 +271,7 @@ def test_extract_feature_content_data(id_range=[]):
     for elt in ids:
         data_dict = get_content_from_id(elt)
         temp_dict = extract_feature(content_data=data_dict)
+        #exclude target and social shares
         if len(temp_dict) == (len(FEATURE) - 2):
             data_list.append(temp_dict)
 
@@ -311,23 +313,28 @@ def test_algorithm(x, y, clf, cv_folds=4):
     print 'mse mean: ', numpy.mean(numpy.array(mse))
     print 'mse median: ', numpy.median(numpy.array(mse))
 
-    return
+    return clf
 
 
 def load_csv_data(filename):
     with open('data/' + filename, 'rU') as fs:
         data = [row for row in csv.reader(fs)]
 
-    header = data[0]
-    body_data = [[eval(col) for col in row] for row in data[1:]]
+    header = [data[0]]
+    body_data = [[float(col) for col in row] for row in data[1:]]
 
-    return [header] + body_data[:]
+    return header[:] + body_data[:]
 
 
 def data_to_array(data, scale_data=False):
     x = []
     y = []
+
     body_data = data[1:]
+
+    for num in range(100):
+        random.shuffle(body_data)
+
     for row in body_data:
         x.append(row[1:])
         y.append(row[0])

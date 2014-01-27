@@ -4,7 +4,9 @@ from algorithm import *
 
 class Extract():
     """
-    @todo: check num of features
+    @todo: check num of features,
+           deal with None data,
+           testing
     """
     def __init__(self, content_data):
         self.anchor = get_anchor_feature(content_data.soup)

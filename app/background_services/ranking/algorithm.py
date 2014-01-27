@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 import unicodedata
 import string
 import json
-import pickle
 import tldextract
 from textblob import TextBlob
 from urlparse import urlparse

@@ -16,7 +16,6 @@ import nltk
 import rank_url
 import time
 import random
-from urlparse import urlparse
 from algorithm import *
 from social_data import get_total_shares
 from app.background_services.aggregation.main import auto_tag
