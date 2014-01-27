@@ -4,8 +4,8 @@ import pickle
 from sklearn import preprocessing
 
 
-with open('data/algorithm.p', 'rb') as fp:
-    algorithm = pickle.load(fp)
+with open('data/algorithm.p', 'rb') as fs:
+    algorithm = pickle.load(fs)
 
 
 def predicted_shares(social_shares, content):
