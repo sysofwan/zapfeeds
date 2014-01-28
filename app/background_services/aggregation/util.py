@@ -25,8 +25,10 @@ def get_content_from_node(node):
     if node:
         content = node.get('content')
         if content:
-            return htmlParser.unescape(content)
+            return clean_html(content)
     return None
+
+def remove_non_ascii(s): return "".join(i for i in s if ord(i)<128)
 
 def clean_html(html_string):
     """
@@ -41,4 +43,6 @@ def clean_html(html_string):
     for char in STRING_LITERAL:
         text.replace(char, '')
 
-    return htmlParser.unescape(text)
+    text = remove_non_ascii(text)
+    text = htmlParser.unescape(text)
+    return text
