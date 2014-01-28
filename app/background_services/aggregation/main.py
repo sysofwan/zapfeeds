@@ -41,6 +41,14 @@ class ContentData():
         self.type = get_type(self.url, self.soup)
         self.raw_html = self.page_req.text
 
+    def valid(self):
+        return self.page_req.ok and not self.is_duplicate_url()
+
+    def is_duplicate_url(self):
+        content = Content.get_content_by_link(self.url)
+        if content:
+            return True
+        return False
 
 def get_primary_content_data(rss_url, source_id, session):
     """
@@ -70,7 +78,7 @@ def get_content_from_feed(feed, source_id, session):
     raw_url = get_raw_url(feed.link)
     content_data = ContentData(raw_url, feed)
 
-    if is_duplicate_url(content_data.url):
+    if not content_data.valid():
         return None
 
     return generate_content(content_data, source_id, session)

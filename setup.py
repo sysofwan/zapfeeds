@@ -48,5 +48,4 @@ subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'nltk'])
 subprocess.call([os.path.join('flask', bin, 'pip'), 'install', '-git+http://github.com/scipy/scipy/'])
 subprocess.call([os.path.join('flask', bin, 'pip'), 'install', '-U scikit-learn'])
 subprocess.call([os.path.join('flask', bin, 'pip'), 'install', '-U textblob'])
-
-
+subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'ftfy'])
