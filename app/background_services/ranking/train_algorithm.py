@@ -316,7 +316,7 @@ def test_algorithm(x, y, clf, cv_folds=4):
     return clf
 
 
-def load_csv_data(filename):
+def load_csv_data(filename='data.csv'):
     with open('data/' + filename, 'rU') as fs:
         data = [row for row in csv.reader(fs)]
 

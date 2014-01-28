@@ -45,4 +45,8 @@ subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'boilerpipe'])
 subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'flup'])
 subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'tldextract'])
 subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'nltk'])
-subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'python-daemon'])
+subprocess.call([os.path.join('flask', bin, 'pip'), 'install', '-git+http://github.com/scipy/scipy/'])
+subprocess.call([os.path.join('flask', bin, 'pip'), 'install', '-U scikit-learn'])
+subprocess.call([os.path.join('flask', bin, 'pip'), 'install', '-U textblob'])
+
+

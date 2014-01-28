@@ -6,7 +6,7 @@ from time import mktime
 from app.models.Content import Content, Tag, SiteName, ContentType
 from util import join_root_with_domain, get_og_property, get_meta_property, \
     get_twitter_property, clean_html, htmlParser
-from  app.background_services.aggregation.custom_url import get_raw_url
+from app.background_services.aggregation.custom_url import get_raw_url
 import feedparser
 from bs4 import BeautifulSoup
 from tagger import Reader, Stemmer, Rater, Tagger
@@ -25,6 +25,7 @@ class ContentData():
     """
     @TODO: check requests status code 200
     """
+
     def __init__(self, raw_url, feed):
         self.raw_url = raw_url
         self.feed = feed
@@ -60,7 +61,6 @@ def get_primary_content_data(rss_url, source_id, session):
                 session.commit()
 
 
-
 def get_content_from_feed(feed, source_id, session):
     """
     Return a content object from given feed
@@ -74,6 +74,7 @@ def get_content_from_feed(feed, source_id, session):
         return None
 
     return generate_content(content_data, source_id, session)
+
 
 def generate_content(content_data, source_id, session):
     content = Content()
@@ -95,6 +96,7 @@ def generate_content(content_data, source_id, session):
 
     return content
 
+
 def is_duplicate_content(feed):
     # TODO:  If there is still duplicate, we can check using raw title and domain
     feed_id = get_feed_id(feed)
@@ -103,11 +105,13 @@ def is_duplicate_content(feed):
         return True
     return False
 
+
 def is_duplicate_url(url):
     content = Content.get_content_by_link(url)
     if content:
         return True
     return False
+
 
 def get_feed_id(feed):
     try:
@@ -116,12 +120,14 @@ def get_feed_id(feed):
         feed_id = feed.link
     return feed_id
 
+
 def get_url(page_request, soup):
     url = get_og_property(soup, 'url')
     if not url or not url.startswith('http'):
         # throw out trailing id
         url = page_request.url.split('#')[0]
     return url
+
 
 def get_title(soup, feed):
     og_title = get_og_property(soup, 'title')
@@ -135,6 +141,7 @@ def get_title(soup, feed):
         return meta_title
     return clean_html(feed.title)
 
+
 def get_description(soup, feed):
     og_desc = get_og_property(soup, 'description')
     if og_desc:
@@ -147,6 +154,7 @@ def get_description(soup, feed):
         return meta_desc
     return clean_html(feed.description)
 
+
 def get_image_url(soup):
     og_image = get_og_property(soup, 'image')
     if og_image:
@@ -154,6 +162,7 @@ def get_image_url(soup):
     tw_image = get_twitter_property(soup, 'image')
     if tw_image:
         return tw_image
+
 
 def get_icon_url(soup, url):
     icon_node = soup.find('link', {'rel': 'icon'})
@@ -163,8 +172,10 @@ def get_icon_url(soup, url):
         icon_node = soup.find('link', {'rel': 'Shortcut Icon'})
     return get_icon_url_from_node(icon_node, url)
 
+
 def get_timestamp(feed):
     return datetime.fromtimestamp(mktime(feed.published_parsed))
+
 
 def get_tags(content_data, session):
     """
@@ -177,13 +188,19 @@ def get_tags(content_data, session):
         tags_obj.append(Tag.get_or_create_tag(session, tag))
     return tags_obj
 
+
 def clean_tags(tags):
     tags = [tag.replace('\'', '') for tag in tags]
     tags = [tag.replace('\"', '') for tag in tags]
     tags = [tag.strip() for tag in tags]
     return [tag for tag in tags if ( '--' not in tag and 2 < len(tag) < 20)]
 
+
 def auto_tagger(content_data):
+    """
+    @todo: find a better word corpus,
+           improve tagger in general
+    """
     text = get_tagging_text(content_data)
     try:
         tags = auto_tag(text, 3)
@@ -192,6 +209,7 @@ def auto_tagger(content_data):
                      content_data.id, e.__class__.__name__, e)
         return []
     return clean_tags([str(tag) for tag in tags])
+
 
 def extract_article(html_text):
     try:
@@ -204,21 +222,28 @@ def extract_article(html_text):
         text_string = ''
     return text_string
 
+
 def get_tagging_text(content_data):
+    """
+    @todo: exclude numbers,
+           consider n-grams
+    """
     title_text = content_data.title
     description_text = content_data.description
     body_text = content_data.content_text
     #increase weight for title and description
-    text_string = [title_text]*2 + [description_text]*2 + [body_text]
+    text_string = [title_text] * 2 + [description_text] * 2 + [body_text]
     text_string = ' '.join(text_string)
     text_string = unicodedata.normalize('NFKD', text_string).encode('ascii', 'ignore')
     return str(text_string)
+
 
 def get_site_name(soup, session):
     site_name = get_og_property(soup, 'site_name')
     if site_name:
         return SiteName.get_or_create_site_name(session, site_name)
     return None
+
 
 def get_type(url, soup):
     if 'imgur.com' in url:
@@ -229,6 +254,7 @@ def get_type(url, soup):
         type_str = type_str.split('.')[0]
         return ContentType.get_content_type(type_str)
     return None
+
 
 def get_icon_url_from_node(icon_node, url):
     icon_url = '/favicon.ico'
