@@ -1,5 +1,6 @@
 import HTMLParser
 import nltk
+from ftfy import fix_text
 
 STRING_LITERAL = ['\n', '\\']
 htmlParser = HTMLParser.HTMLParser()
@@ -43,6 +44,6 @@ def clean_html(html_string):
     for char in STRING_LITERAL:
         text.replace(char, '')
 
-    text = remove_non_ascii(text)
+    text = fix_text(text)
     text = htmlParser.unescape(text)
     return text
