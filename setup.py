@@ -51,3 +51,5 @@ subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'git+http://githu
 subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'scikit-learn'])
 subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'textblob'])
 subprocess.call([os.path.join('flask', bin, 'pip'), 'install', 'ftfy'])
+subprocess.call([os.path.join('flask', bin, 'python'), '-m', 'nltk.downloader', 'all'])
+
