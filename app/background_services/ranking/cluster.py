@@ -1,14 +1,18 @@
 import nltk
 import math
 import numpy
+import time
 import operator
 from nltk.corpus import stopwords
-from nltk.stem.wordnet import WordNetLemmatizer
+#from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.stem.porter import PorterStemmer
 from scipy.cluster.hierarchy import linkage
+from app.models.Content import Content
 
 
 
-lemmatizer = WordNetLemmatizer()
+#lemmatizer = WordNetLemmatizer()
+stemmer = PorterStemmer()
 
 
 #==============================================================================
@@ -16,20 +20,30 @@ lemmatizer = WordNetLemmatizer()
 #==============================================================================
 
 
-def get_data():
+def id_from_database():
+    ids = [elt.id for elt in Content.query.all()]
+    return ids
+
+
+def get_data(news_number=1000):
     """
     todo:
     get text from db? html?
     """
     data = []
-    query = '''
-            select
-            id, title, description
-            from
-            contents
-            '''
-    #data = query_database(query)
-    #data = [list(row) for row in data]
+    counter = 0
+    ids = id_from_database()
+    for news_id in ids:
+        if counter >= news_number:
+            break
+        content = Content.get_content_by_id(news_id)
+        title = content.title
+        description = content.description
+        if not description:
+            description = title
+        data.append([news_id, title, description])
+        counter += 1
+
     return data
 
 
@@ -54,7 +68,7 @@ def populate_data(data_list):
             desc = title
 
         words_list = nltk.wordpunct_tokenize((title + desc).lower())
-        words_list = [lemmatizer.lemmatize(word) for word in words_list if
+        words_list = [stemmer.stem(word) for word in words_list if
                       len(word) > 1 and
                       word.isalpha() and
                       word not in stopwords.words('english')]
@@ -223,6 +237,7 @@ def cluster(data_list, threshold=0.9, n_keywords=5):
     data_list: <id>, <title>, <description>
     returns: clusters with keyword:[<id1>,<id2>,...,<idn>]
     """
+    time_start = time.time()
 
     clusters = {}
     titles, corpus = populate_data([data[1:] for data in data_list])
@@ -238,6 +253,8 @@ def cluster(data_list, threshold=0.9, n_keywords=5):
     clusters_dict = extract_clusters(Z, threshold, len(corpus))
     keyword_id_dict = keyword_cluster(clusters_dict, key_word_list, feature_vec)
 
+    total_seconds = time.time() - time_start
+
     for key in keyword_id_dict:
         print '==============================='
         print 'Keyword: ', key
@@ -246,6 +263,12 @@ def cluster(data_list, threshold=0.9, n_keywords=5):
             clusters_temp.append(data_list[link_id][0])
             print 'ID: ', data_list[link_id][0], ' Title: ', data_list[link_id][1]
         clusters[key] = clusters_temp
+
+    print '\n\n=========== stats ===========\n'
+    print 'data count: ', len(data)
+    print 'threshold: ', threshold
+    print 'number of keywords: ', n_keywords
+    print 'total running time: ', total_seconds
 
     return clusters
 

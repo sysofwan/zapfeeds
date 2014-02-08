@@ -18,8 +18,7 @@ def unweighted_score(social_score):
 
 def rank_content(content):
     age = datetime.utcnow() - content.timestamp
-    social_share = content.social_shares[0]
-    total_score = social_share.facebook_shares + social_share.retweets + social_share.upvotes
+    total_score = content.predicted_shares
     if age < timedelta(days=3):
         return score(total_score, content.timestamp)
     else:
