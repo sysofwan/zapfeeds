@@ -19,26 +19,12 @@ import random
 from algorithm import *
 from social_data import get_total_shares
 from app.background_services.aggregation.main import auto_tag
+from app.models.Content import Content
 
 
 #==============================================================================
 #==================================get data====================================
 #==============================================================================
-
-
-def get_title():
-    title_list = []
-    query = '''
-            select
-            title
-            from
-            contents
-            '''
-    data = query_database(query)
-    for row in data:
-        title_list.append(row[0])
-
-    return title_list
 
 
 def get_word_pos(pos_tag, tag_type):
@@ -73,57 +59,27 @@ def get_head():
     returns <title>,<description>,<social shares>
     """
     result = []
-    query = '''
-            select
-            title, description, facebook_shares + retweets + upvotes
-            from
-            contents, social_shares
-            where
-            contents.id = social_shares.content_id
-            '''
-    data = query_database(query)
-    for row in data:
+
+    for content in Content.query.all():
         #place title if no description available
-        if not row[1]:
-            result.append([row[0] + ' ' + row[0], row[2]])
+        if not content.description:
+            result.append([content.title + ' ' + content.title, content.real_shares])
         else:
-            result.append([row[0] + ' ' + row[1], row[2]])
+            result.append([content.title + ' ' + content.description, content.real_shares])
     return result
 
 
-def get_body(html=False):
+def get_body():
     """
     parameters: html - extract text from html
     returns: <text><social shares>
     """
     result = []
-    text = 'text'
-    if html:
-        text = 'raw_html'
+    ids = [content.id for content in Content.query.all()]
 
-    uniqid = query_database('select distinct id from contents')
-    for id in uniqid:
-        query = 'select ' + text + ',facebook_shares + retweets + upvotes '
-        query += '''
-                 from
-                 contents, social_shares
-                 where
-                 contents.id = social_shares.content_id
-                 '''
-        query += 'and contents.id=' + str(id[0])
-        data = query_database(query)
-        if not data:
-            continue
-        else:
-            raw_html = data[0][0]
-            shares = data[0][1]
-        if not raw_html and shares:
-            continue
-        if html:
-            if raw_html and shares:
-                result.append([html_to_text(raw_html), shares])
-        else:
-            result.append(raw_html, shares)
+    for content_id in ids:
+        content_data = Content.get_content_by_id(content_id)
+        result.append([html_to_text(content_data), content_data.real_shares])
     return result
 
 
@@ -131,18 +87,11 @@ def get_url():
     """
     returns: 2D list with format:- <url1>,<social shares1>
     """
-    query = '''
-            select
-            url, facebook_shares + retweets + upvotes
-            from
-            contents, social_shares
-            where
-            contents.id = social_shares.content_id;
-            '''
-    url_temp = query_database(query)
-    url = [list(row) for row in url_temp]
+    data = []
+    for content in Content.query.all():
+        data.append([content.url, content.real_shares])
 
-    return url
+    return data
 
 
 #==============================================================================

@@ -10,11 +10,11 @@ logger.setLevel(logging.INFO)
 file_handler = RotatingFileHandler('aggregation.log', maxBytes=3 * 1000000)
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(file_handler)
+logger.addHandler(logging.StreamHandler())
 
 if __name__ == '__main__':
     logger.info('Starting aggregation process...')
     try:
         update_contents()
     except Exception as e:
-        logger.critical('Caught exception: %s, %s', e.__class__.__name__, e.message)
+        logger.exception('Caught exception: %s, %s', e.__class__.__name__, e)

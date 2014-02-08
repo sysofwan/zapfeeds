@@ -11,17 +11,20 @@ from app.background_services.ranking.rank import rank_content
 session = db.session
 logger = logging.getLogger(__name__)
 
+
 def update_contents():
     aggregate_content()
     populate_social_count()
     rank_contents()
     populate_real_shares()
 
+
 def aggregate_content():
     logger.info('Aggregating contents...')
     sources = ContentSource.get_all_sources()
     for source in sources:
         get_primary_content_data(source.url, source.id, session)
+
 
 def populate_social_count():
     logger.info('Populating social counts...')
@@ -34,10 +37,11 @@ def populate_social_count():
                          content.id, e.__class__.__name__, e.message)
             continue
         social_share.content_id = content.id
+        content.predicted_shares = predicted_shares(social_share, content)
         session.add(social_share)
         session.add(content)
-        content.predicted_shares = predicted_shares(social_share)
     session.commit()
+
 
 def populate_real_shares():
     logger.info('Populating real shares...')
@@ -47,6 +51,7 @@ def populate_real_shares():
         content.real_shares = total_share
         session.add(content)
     session.commit()
+
 
 def rank_contents():
     logger.info('Ranking contents...')

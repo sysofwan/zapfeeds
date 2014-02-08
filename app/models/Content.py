@@ -4,9 +4,12 @@ from datetime import datetime, timedelta
 from content_metadata import ContentType, SiteName, Tag, TagContent
 from sqlalchemy import and_, or_
 import random
+import json
+import requests
 
 CONTENTS_PER_PAGE = 30
 TOP_CONTENTS_TO_SHUFFLE = 100
+
 
 class Content(db.Model):
     """All contents indexed..."""
@@ -80,6 +83,11 @@ class Content(db.Model):
     def get_content_by_feed_id(cls, feed_id):
         return cls.query.filter(cls.feed_id == feed_id).first()
 
+
+    @classmethod
+    def get_content_by_id(cls, content_id):
+        return cls.query.filter(cls.id == content_id).first()
+
     @classmethod
     def get_unranked_contents_by_age(cls, hours_ago):
         return cls.query.filter(
@@ -90,7 +98,7 @@ class Content(db.Model):
     def get_content_no_real_shares_by_age(cls, days_ago):
         return cls.query.filter(
             and_(cls.real_shares == None, datetime.utcnow() - cls.timestamp >=
-                                   timedelta(days=days_ago))).all()
+                                          timedelta(days=days_ago))).all()
 
     @classmethod
     def get_content_for_ranking(cls, days):
@@ -120,10 +128,10 @@ class Content(db.Model):
     @classmethod
     def get_top_unviewed(cls, viewed=None):
         if not viewed:
-            content = cls.query.filter(cls.rank != None)\
+            content = cls.query.filter(cls.rank != None) \
                           .order_by(cls.rank.desc())[0:TOP_CONTENTS_TO_SHUFFLE]
         else:
-            content = cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed)))\
+            content = cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed))) \
                           .order_by(cls.rank.desc())[0:TOP_CONTENTS_TO_SHUFFLE]
         random.shuffle(content)
         return content[0:CONTENTS_PER_PAGE]
@@ -131,13 +139,13 @@ class Content(db.Model):
 
     @classmethod
     def get_top_by_pages(cls, page, viewed):
-        return cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed))).order_by(cls.rank.desc())\
+        return cls.query.filter(and_(cls.rank != None, ~cls.id.in_(viewed))).order_by(cls.rank.desc()) \
             .paginate(page, CONTENTS_PER_PAGE, False).items
 
     @classmethod
     def get_top_tag_filtered(cls, page, tags, viewed=None):
-        query = cls.query\
-            .join(TagContent, Content.id == TagContent.content_id)\
+        query = cls.query \
+            .join(TagContent, Content.id == TagContent.content_id) \
             .join(Tag, Tag.id == TagContent.tag_id)
         if viewed:
             query = query.filter(and_(cls.rank != None, Tag.tag_string.in_(tags), ~cls.id.in_(viewed)))
@@ -148,7 +156,7 @@ class Content(db.Model):
 
     @classmethod
     def get_top_type_filtered(cls, page, types, viewed=None):
-        query = cls.query\
+        query = cls.query \
             .join(ContentType, ContentType.id == cls.type_id)
         if viewed:
             query = query.filter(and_(cls.rank != None, ContentType.type_string.in_(types), ~cls.id.in_(viewed)))
@@ -205,6 +213,20 @@ class Content(db.Model):
             serialized['primary_tag'] = self.source.tag.tag_string
 
         return serialized
+
+    def get_feature_extraction(self):
+        return json.loads(self.feature_extraction)
+
+    @classmethod
+    def get_raw_html_by_id(cls, content_id):
+        raw_html = ''
+        url = cls.get_content_by_id(content_id).url
+        try:
+            response = requests.get(url)
+            raw_html = response.text
+        except:
+            pass
+        return raw_html
 
 
 

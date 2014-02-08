@@ -5,7 +5,7 @@ import operator
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 from scipy.cluster.hierarchy import linkage
-from algorithm import query_database
+
 
 
 lemmatizer = WordNetLemmatizer()
@@ -21,14 +21,15 @@ def get_data():
     todo:
     get text from db? html?
     """
+    data = []
     query = '''
             select
             id, title, description
             from
             contents
             '''
-    data = query_database(query)
-    data = [list(row) for row in data]
+    #data = query_database(query)
+    #data = [list(row) for row in data]
     return data
 
 

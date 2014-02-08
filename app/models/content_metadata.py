@@ -103,6 +103,16 @@ class SocialShare(db.Model):
         return social
 
 
+    @classmethod
+    def get_first_social_shares_by_content_id(cls, content_id):
+        """
+        @TODO:
+        """
+        return cls.query.filter(cls.content_id == content_id)\
+            .order_by(cls.timestamp).first()
+
+
+
 class SiteName(db.Model):
     """Name of content source site"""
     __tablename__ = 'site_names'

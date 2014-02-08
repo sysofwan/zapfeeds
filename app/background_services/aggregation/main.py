@@ -55,15 +55,16 @@ def get_primary_content_data(rss_url, source_id, session):
     @TODO: check for english articles only
     """
     feed_data = feedparser.parse(rss_url)
-
     for feed in feed_data.entries:
         if not is_duplicate_content(feed):
             try:
                 content = get_content_from_feed(feed, source_id, session)
+
             except Exception as e:
                 content = None
-                logger.error('Error parsing content with feed id: %s. Exception: %s, %s',
-                             feed.id, e.__class__.__name__, e)
+                logger.exception('Error parsing content with feed link: %s. RSS url: %s. Exception: %s, %s',
+                                 feed.link, rss_url, e.__class__.__name__, e)
+
             if content:
                 session.add(content)
                 session.commit()
@@ -207,7 +208,7 @@ def clean_tags(tags):
 def auto_tagger(content_data):
     """
     @todo: find a better word corpus,
-           improve tagger in general
+           experiment with different taggers
     """
     text = get_tagging_text(content_data)
     try:

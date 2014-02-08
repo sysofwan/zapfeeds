@@ -2,13 +2,16 @@
 
 """
 
-import psycopg2
+from app.models.Content import Content
+from app.models.content_metadata import SocialShare
 from boilerpipe.extract import Extractor
 from bs4 import BeautifulSoup
 import unicodedata
 import string
 import json
 import tldextract
+from pprint import pprint
+import re
 from textblob import TextBlob
 from urlparse import urlparse
 from nltk.corpus import stopwords
@@ -144,26 +147,11 @@ def open_json_file(filename):
     return data
 
 
-def query_database(query):
-    con = psycopg2.connect(database='aggregator_daddy', user='has')
-    cur = con.cursor()
-    data = ''
-    try:
-        cur.execute(query)
-        data = cur.fetchall()
-    except:
-        print 'Problem querying data from database'
-        print 'Query: ', query
-        con.rollback()
-    con.close()
-    return data
-
-
 def html_to_text(html):
     try:
         extractor = Extractor(extractor='ArticleExtractor', html=html)
     except:
-        print 'problem extracting text from html: ', html
+        print 'problem extracting text from html'
         return ''
     text = extractor.getText()
     text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
@@ -184,10 +172,11 @@ def tokenize(text, stopword=False, punct=False, lower=False,
         #temp = i.decode('unicode-escape')
         #temp = re.sub(ur'[\xc2-\xf4][\x80-\xbf]+',
         #             lambda m: m.group(0).encode('latin1').decode('utf8'), temp)
-        #temp = unicodedata.normalize('NFKD', temp).encode('ascii', 'ignore')
+        temp = unicode(i)
+        temp = unicodedata.normalize('NFKD', temp).encode('ascii', 'ignore')
 
         # get rid of empty strings
-        temp = i
+        #temp = i
         if temp:
             token.append(temp)
 
@@ -331,30 +320,6 @@ def get_sentence_length(text):
     return sentence_num
 
 
-def get_char_word_ratio(text):
-    num = get_char_length(text)
-    denom = float(get_word_length(text))
-    if not denom:
-        return 0.0
-    return num / denom
-
-
-def get_word_sentence_ratio(text):
-    num = get_word_length(text)
-    denom = float(get_sentence_length(text))
-    if not denom:
-        return 0.0
-    return num / denom
-
-
-def get_word_punct_ratio(text):
-    num = get_word_length(text)
-    denom = float(get_punctuation_num(text))
-    if not denom:
-        return 0.0
-    return num / denom
-
-
 def is_precomputed_semantic(feature):
     return feature in TEXT_FEATURE[:12]
 
@@ -368,10 +333,7 @@ def is_sentiment(feature):
 SENT_FEATURE = {'punctuation': get_punctuation_num,
                 'char_length': get_char_length,
                 'word_length': get_word_length,
-                'sentence_length': get_sentence_length,
-                'char_word_ratio': get_char_word_ratio,
-                'word_sentence_ratio': get_word_sentence_ratio,
-                'word_punctuation_ratio': get_word_punct_ratio}
+                'sentence_length': get_sentence_length}
 
 
 def get_sent_score(text, feature):
@@ -543,8 +505,7 @@ def get_url_feature(content_id=0, content_data=''):
 
     #get data
     if content_id:
-        url = query_database('select url from contents where id=' +
-                             str(content_id))[0][0]
+        url = Content.get_content_by_id(content_id).url
     elif content_data:
         url = content_data
     if not url:
@@ -575,8 +536,7 @@ def get_title_feature(content_id=0, content_data=''):
 
     #get data
     if content_id:
-        title = query_database('select title from contents where id=' +
-                               str(content_id))[0][0]
+        title = Content.get_content_by_id(content_id).title
     elif content_data:
         title = content_data
     if not title:
@@ -608,8 +568,7 @@ def get_timestamp_feature(content_id=0, content_data=''):
 
     #get data
     if content_id:
-        time_data = query_database('select timestamp from contents where id=' +
-                                   str(content_id))[0][0]
+        time_data = Content.get_content_by_id(content_id).timestamp
     elif content_data:
         time_data = content_data
     if not time_data:
@@ -634,12 +593,10 @@ def get_description_feature(content_id=0, content_data=''):
 
     #get data
     if content_id:
-        desc_data = query_database('select description from contents where id=' +
-                                   str(content_id))[0][0]
+        desc_data = Content.get_content_by_id(content_id).description
         #use title data for analysis
         if not desc_data:
-            desc_data = query_database('select title from contents where id=' +
-                                       str(content_id))[0][0]
+            desc_data = Content.get_content_by_id(content_id).title
     elif content_data:
         desc_data = content_data
     if not desc_data:
@@ -654,24 +611,20 @@ def get_description_feature(content_id=0, content_data=''):
 #----------------------------------social--------------------------------------
 
 
-def social_shares(data):
-    return data[0][1] + data[0][2] + data[0][3]
-
 
 def get_social_feature(content_id=0, content_data=''):
     """
-    status: required
+    @todo: separate fb, twitter, reddit
     """
     social_dict = {}
     num_shares = 0
 
     #get data
     if content_id:
-        data = query_database('select * from social_shares where content_id=' +
-                              str(content_id))
+        data = SocialShare.get_first_social_shares_by_content_id(content_id)
         if not data:
             return {}
-        num_shares = social_shares(data)
+        num_shares = data.facebook_shares + data.retweets + data.upvotes
     elif content_data:
         num_shares = content_data
     if not num_shares:
@@ -693,8 +646,7 @@ def get_thumbnail_feature(content_id=0, content_data=''):
 
     #get data
     if content_id:
-        data = query_database('select image_url from contents where id=' +
-                              str(content_id))[0][0]
+        data = Content.get_content_by_id(content_id).image_url
     elif content_data:
         data = content_data
 
@@ -715,8 +667,7 @@ def get_icon_feature(content_id=0, content_data=''):
 
     #get data
     if content_id:
-        data = query_database('select icon_url from contents where id=' +
-                              str(content_id))[0][0]
+        data = Content.get_content_by_id(content_id).icon_url
     elif content_data:
         data = content_data
 
@@ -737,15 +688,19 @@ def get_content_type_feature(content_id=0, content_data=''):
 
     #get data
     if content_id:
-        data_temp = query_database('select icon_url from contents where id=' +
-                                   str(content_id))[0][0]
+        data_temp = Content.get_content_by_id(content_id).type_id
         if data_temp:
             if data_temp.isdigit():
                 data = int(data_temp)
     elif content_data:
         data = content_data
 
-    return {'content_type': data}
+    if not data:
+        content_type = 0
+    else:
+        content_type = data.id
+
+    return {'content_type': content_type}
 
 
 #==================================aggregate features==========================
@@ -831,8 +786,7 @@ def view_data(content_id=0, content_data={}):
 #----------------------------------body----------------------------------------
 
 def get_text(content_id):
-    raw_html = query_database('select raw_html from contents where id=' +
-                              str(content_id))[0][0]
+    raw_html = Content.get_raw_html_by_id(content_id)
     try:
         text = Extractor(extractor='ArticleExtractor', html=raw_html).getText()
     except:
@@ -898,8 +852,7 @@ def get_html_feature(content_id=0, content_data='', html_data=''):
 
     #get data
     if content_id:
-        html_data = query_database('select raw_html from contents where id=' +
-                                   str(content_id))[0][0]
+        html_data = Content.get_raw_html_by_id(content_id)
         try:
             soup = BeautifulSoup(html_data)
         except:
@@ -954,8 +907,7 @@ def get_heading_feature(content_id=0, content_data='', html_data=''):
 
     #get data
     if content_id:
-        html = query_database('select raw_html from contents where id=' +
-                              str(content_id))[0][0]
+        html = Content.get_raw_html_by_id(content_id)
         try:
             soup_data = BeautifulSoup(html)
         except:
@@ -1005,9 +957,16 @@ def sum_list_dict(list_dict, var_name):
 def get_anchor(soup_data):
     a_tags = []
     #find a tags in p tags
-    p_tags = soup_data.find_all('p')
-    for p in p_tags:
-        a_tags += p.find_all('a')
+    try:
+        p_tags = soup_data.find_all('p')
+        for p in p_tags:
+            if p:
+                temp_tag = p.find_all('a')
+                if temp_tag:
+                    a_tags += temp_tag
+    except:
+        print 'wong wong wong algorithm.py in get_anchor'
+        pass
     return a_tags
 
 
@@ -1025,8 +984,7 @@ def get_anchor_feature(content_id=0, content_data='', html_data=''):
 
     #get data
     if content_id:
-        raw_html = query_database('select raw_html from contents where id=' +
-                                  str(content_id))[0][0]
+        raw_html = Content.get_raw_html_by_id(content_id)
         try:
             soup_data = BeautifulSoup(raw_html)
         except:
@@ -1121,8 +1079,6 @@ h/html
 a/html
 p/html
 
-
-
 EMBED
 STYLE
 LAYOUT
@@ -1175,6 +1131,7 @@ def get_ratio_feature(data_dict):
         try:
             ratio_dict[feature] = get_ratio(data_dict[num], data_dict[denom])
         except:
+            print 'errorrrrrr in get_ratio_feature algorithnm'
             return {}
 
     return ratio_dict
@@ -1187,11 +1144,10 @@ def get_target(content_id):
     """
     get the last social shares from database
     """
-    data = query_database('select * from social_shares where content_id=' +
-                          str(content_id))
+    data = SocialShare.get_last_social_shares_by_content_id(content_id)
     if not data:
         return
-    return data[-1][1] + data[-1][2] + data[-1][3]
+    return data.facebook_shares + data.retweets + data.upvotes
 
 
 #==============================================================================

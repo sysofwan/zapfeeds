@@ -222,42 +222,20 @@ def extract_feature(content_id=0, content_data={}, train=False):
 
 
 def id_from_database():
-    query = '''
-            select
-            id
-            from
-            contents
-            order by
-            id asc
-            '''
-
-    data = query_database(query)
-    ids = []
-    for row in data:
-        ids.append(row[0])
+    ids = [elt.id for elt in Content.query.all()]
     return ids
 
 
-CONTENT_TYPE = ['url', 'title', 'timestamp', 'description',
-                'thumbnail', 'icon_url', 'type_id', 'raw_html']
-
-
 def get_content_from_id(content_id):
-    query = '''
-            select
-            url, title, timestamp, description, image_url,
-            icon_url, type_id, raw_html
-            from
-            contents
-            where
-            id=
-            '''
-    query += str(content_id)
-    data = query_database(query)
-    data_dict = {}
-    for row in data:
-        for index in range(len(CONTENT_TYPE)):
-            data_dict[CONTENT_TYPE[index]] = row[index]
+    data = Content.get_content_by_id(content_id)
+    data_dict = {'url': data.url,
+                 'title': data.title,
+                 'description': data.description,
+                 'timestamp': data.timestamp,
+                 'thumbnail': data.image_url,
+                 'icon_url': data.icon_url,
+                 'type_id': data.type_id,
+                 'raw_html': Content.get_raw_html_by_id(content_id)}
 
     return data_dict
 
