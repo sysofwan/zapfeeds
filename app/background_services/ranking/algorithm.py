@@ -1,7 +1,3 @@
-"""
-
-"""
-
 from app.models.Content import Content
 from app.models.content_metadata import SocialShare
 from boilerpipe.extract import Extractor
@@ -11,12 +7,11 @@ import string
 import json
 import tldextract
 import logging
-from pprint import pprint
-import re
+#import re
 from textblob import TextBlob
 from urlparse import urlparse
 from nltk.corpus import stopwords
-from nltk.tokenize.punkt import PunktWordTokenizer
+#from nltk.tokenize.punkt import PunktWordTokenizer
 from nltk.tokenize import TreebankWordTokenizer
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize, sent_tokenize
@@ -131,7 +126,7 @@ def link_to_text(link):
     try:
         paths = urlparse(link)[2]
     except Exception as e:
-        logger.exception('Error parsing url: %s. Exception: %s, %s',
+        logger.exception('\nError parsing url: %s. Exception: %s, %s',
                          link, e.__class__.__name__, e)
         return ''
     for path in paths.split('/'):
@@ -147,8 +142,8 @@ def open_json_file(filename):
     """
     open json file
     """
-    with open(filename, 'rb') as fs:
-        data = json.load(fs)
+    with open(filename, 'rb') as fj:
+        data = json.load(fj)
     return data
 
 
@@ -156,7 +151,7 @@ def html_to_text(html):
     try:
         extractor = Extractor(extractor='ArticleExtractor', html=html)
     except Exception as e:
-        logger.exception('Error extracting text from html. Exception: %s, %s',
+        logger.exception('\nError extracting text from html. Exception: %s, %s',
                          e.__class__.__name__, e)
         return ''
     text = extractor.getText()
@@ -174,11 +169,11 @@ def tokenize(text, stopword=False, punct=False, lower=False,
     token = []
     tokenizer = TreebankWordTokenizer()
     token_temp = tokenizer.tokenize(text)
-    for i in token_temp:
+    for elt in token_temp:
         #temp = i.decode('unicode-escape')
         #temp = re.sub(ur'[\xc2-\xf4][\x80-\xbf]+',
         #             lambda m: m.group(0).encode('latin1').decode('utf8'), temp)
-        temp = unicode(i)
+        temp = unicode(elt)
         temp = unicodedata.normalize('NFKD', temp).encode('ascii', 'ignore')
 
         # get rid of empty strings
@@ -263,7 +258,11 @@ GPE_BODY = open_json_file('data/ner/ner_gpe_body.json')
 def sentiment_score(text):
     try:
         text = text.decode('unicode-escape')
-    except:
+    except UnicodeEncodeError:
+        text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
+    except Exception as e:
+        logger.exception('\nError in sentiment analysis. Exception: %s, %s',
+                         e.__class__.__name__, e)
         return {'polarity': 0,
                 'subjectivity': 0}
 
@@ -288,8 +287,8 @@ def rank_semantic(text, data_dict):
 
 def get_punctuation_num(text):
     count = 0
-    for i in string.punctuation:
-        count += text.count(i)
+    for elt in string.punctuation:
+        count += text.count(elt)
     return count
 
 
@@ -300,8 +299,13 @@ def get_char_length(text):
 def to_string(var):
     result = ''
     try:
-        result = str(var)
-    except:
+        if type(var) == unicode:
+            result = unicodedata.normalize('NFKD', var).encode('ascii', 'ignore')
+        else:
+            result = str(var)
+    except Exception as e:
+        logger.exception('\nError converting to string. Exception: %s, %s',
+                         e.__class__.__name__, e)
         pass
     return result
 
@@ -420,8 +424,11 @@ def get_url_length(url):
 
 
 def get_url_level(url):
+    """
+    @todo: fix this function
+    """
     url_path = urlparse(url).path
-    levels = [i for i in url_path.split('/') if i]
+    levels = [path for path in url_path.split('/') if path]
     return len(levels) + 1
 
 
@@ -617,7 +624,6 @@ def get_description_feature(content_id=0, content_data=''):
 #----------------------------------social--------------------------------------
 
 
-
 def get_social_feature(content_id=0, content_data=''):
     """
     @todo: separate fb, twitter, reddit
@@ -757,7 +763,7 @@ def view_data(content_id=0, content_data={}):
 
     description = get_description_feature(content_id=content_id,
                                           content_data=description_data)
-
+    social = {}
     if content_id or social_data:
         social = get_social_feature(content_id=content_id,
                                     content_data=social_data)
@@ -795,7 +801,9 @@ def get_text(content_id):
     raw_html = Content.get_raw_html_by_id(content_id)
     try:
         text = Extractor(extractor='ArticleExtractor', html=raw_html).getText()
-    except:
+    except Exception as e:
+        logger.exception('\nError extracting text from html. Exception: %s, %s',
+                         e.__class__.__name__, e)
         return ''
     return text
 
@@ -971,7 +979,7 @@ def get_anchor(soup_data):
                 if temp_tag:
                     a_tags += temp_tag
     except Exception as e:
-        logger.exception('Error extracting html tags from soup. Exception: %s, %s',
+        logger.exception('\nError extracting html tags from soup. Exception: %s, %s',
                          e.__class__.__name__, e)
         pass
     return a_tags
@@ -1048,7 +1056,9 @@ def access_data(content_id=0, content_data={}):
         text_data = html_to_text(html_data)
         try:
             soup = BeautifulSoup(html_data)
-        except:
+        except Exception as e:
+            logger.exception('\nError BeautifulSoup. Exception: %s, %s',
+                             e.__class__.__name__, e)
             return {}
 
     text = get_body_feature(content_id=content_id,
@@ -1076,23 +1086,23 @@ def access_data(content_id=0, content_data={}):
 #==============================================================================
 
 
-"""
-char/word
-word/sent
-punctuation/word
-
-word/html
-h/html
-a/html
-p/html
-
-EMBED
-STYLE
-LAYOUT
-META
-INPUT
-SCRIPT
-"""
+#"""
+#char/word
+#word/sent
+#punctuation/word
+#
+#word/html
+#h/html
+#a/html
+#p/html
+#
+#EMBED
+#STYLE
+#LAYOUT
+#META
+#INPUT
+#SCRIPT
+#"""
 
 RATIO_FEATURE = {'ratio_char_word': ['body_char_length', 'body_word_length'],
                  'ratio_word_sent': ['body_word_length', 'body_sentence_length'],
@@ -1128,17 +1138,17 @@ def get_ratio_feature(data_dict):
     for feature in RATIO_FEATURE:
         num = RATIO_FEATURE[feature][0]
         denom = RATIO_FEATURE[feature][1]
-        """
-        @bug:
-        KeyError: 'html_h'
-        ERROR: An unexpected error occurred while tokenizing input
-        The following traceback may be corrupted or invalid
-        The error message is: ('EOF in multi-line string', (1, 4))
-        """
+        #
+        #@bug:
+        #KeyError: 'html_h'
+        #ERROR: An unexpected error occurred while tokenizing input
+        #The following traceback may be corrupted or invalid
+        #The error message is: ('EOF in multi-line string', (1, 4))
+        #
         try:
             ratio_dict[feature] = get_ratio(data_dict[num], data_dict[denom])
         except Exception as e:
-            logger.exception('Error calculating ratio feature. Exception: %s, %s',
+            logger.exception('\nError calculating ratio feature. Exception: %s, %s',
                              e.__class__.__name__, e)
             return {}
 
@@ -1161,8 +1171,3 @@ def get_target(content_id):
 #==============================================================================
 #                               main
 #==============================================================================
-
-
-
-
-
