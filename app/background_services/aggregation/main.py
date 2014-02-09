@@ -16,6 +16,8 @@ import logging
 from app.background_services.ranking.feature_extraction import Extract
 from urlparse import urljoin
 from requests import ConnectionError
+import langid
+
 
 
 logger = logging.getLogger(__name__)
@@ -41,7 +43,7 @@ class ContentData():
         self.raw_html = self.page_req.text
 
     def valid(self):
-        return self.page_req.ok and not self.is_duplicate_url()
+        return self.page_req.ok and not self.is_duplicate_url() and self.is_english()
 
     def is_duplicate_url(self):
         content = Content.get_content_by_link(self.url)
@@ -49,9 +51,16 @@ class ContentData():
             return True
         return False
 
+    def is_english(self):
+        text = self.content_text
+        if not text:
+            text = self.title
+        language = langid.classify(text)
+        return language[0] == 'en'
+
+
 def get_primary_content_data(rss_url, source_id, session):
     """
-    @TODO: check for english articles only
     """
     feed_data = feedparser.parse(rss_url)
     for feed in feed_data.entries:
@@ -206,7 +215,7 @@ def clean_tags(tags):
     tags = [tag.replace('\'', '') for tag in tags]
     tags = [tag.replace('\"', '') for tag in tags]
     tags = [tag.strip() for tag in tags]
-    return [tag for tag in tags if ( '--' not in tag and 2 < len(tag) < 20)]
+    return [tag for tag in tags if ('--' not in tag and 2 < len(tag) < 20)]
 
 
 def auto_tagger(content_data):
