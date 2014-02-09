@@ -10,6 +10,7 @@ import unicodedata
 import string
 import json
 import tldextract
+import logging
 from pprint import pprint
 import re
 from textblob import TextBlob
@@ -48,6 +49,8 @@ with open('data/TLD.txt', 'r') as fs:
 
 # list of all protocols
 PROTOCOL = ['http:', 'https:']
+
+logger = logging.getLogger(__name__)
 
 #==============================================================================
 #                               general fn
@@ -127,8 +130,10 @@ def link_to_text(link):
     word_list = []
     try:
         paths = urlparse(link)[2]
-    except:
-        print 'cannot apply urlparse to given link'
+    except Exception as e:
+        logger.exception('Error parsing url: %s. Exception: %s, %s',
+                         link, e.__class__.__name__, e)
+        return ''
     for path in paths.split('/'):
         if path:
             for word in path.split('-'):
@@ -150,8 +155,9 @@ def open_json_file(filename):
 def html_to_text(html):
     try:
         extractor = Extractor(extractor='ArticleExtractor', html=html)
-    except:
-        print 'problem extracting text from html'
+    except Exception as e:
+        logger.exception('Error extracting text from html. Exception: %s, %s',
+                         e.__class__.__name__, e)
         return ''
     text = extractor.getText()
     text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
@@ -964,8 +970,9 @@ def get_anchor(soup_data):
                 temp_tag = p.find_all('a')
                 if temp_tag:
                     a_tags += temp_tag
-    except:
-        print 'wong wong wong algorithm.py in get_anchor'
+    except Exception as e:
+        logger.exception('Error extracting html tags from soup. Exception: %s, %s',
+                         e.__class__.__name__, e)
         pass
     return a_tags
 
@@ -1130,8 +1137,9 @@ def get_ratio_feature(data_dict):
         """
         try:
             ratio_dict[feature] = get_ratio(data_dict[num], data_dict[denom])
-        except:
-            print 'errorrrrrr in get_ratio_feature algorithnm'
+        except Exception as e:
+            logger.exception('Error calculating ratio feature. Exception: %s, %s',
+                             e.__class__.__name__, e)
             return {}
 
     return ratio_dict
