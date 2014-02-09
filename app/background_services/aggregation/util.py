@@ -1,14 +1,11 @@
 import HTMLParser
 import nltk
 from ftfy import fix_text
+from urlparse import urlparse, urljoin
 
 STRING_LITERAL = ['\n', '\\']
 htmlParser = HTMLParser.HTMLParser()
 
-def join_root_with_domain(domain_url, join_url):
-    root_idx = domain_url.find('/', 7)
-    join_url = domain_url[:root_idx] + join_url
-    return join_url
 
 def get_og_property(soup, og_prop):
     node = soup.find('meta', {'property': 'og:' + og_prop})
@@ -29,15 +26,19 @@ def get_content_from_node(node):
             return clean_html(content)
     return None
 
-def remove_non_ascii(s): return "".join(i for i in s if ord(i)<128)
+def is_valid_url(url):
+    parsed = urlparse(url)
+    return (parsed.scheme == 'http' or parsed.scheme == 'https') and parsed.netloc and len(parsed.netloc.split('.')) > 1
+
+def get_root_url(url):
+    parsed = urlparse(url)
+    return parsed.scheme + '://' + parsed.netloc
 
 def clean_html(html_string):
     """
     strip html tags and escape html char
-
-    @todo: deal with string literal
-           convert unicode to string - http://stackoverflow.com/questions/1207457/convert-unicode-to-string-in-python-containing-extra-symbols
     """
+
     #get rid of html tags using
     text = nltk.clean_html(html_string)
     #replace trash char
