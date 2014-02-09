@@ -1,7 +1,10 @@
 
 import numpy
 import pickle
+import logging
 from sklearn import preprocessing
+
+logger = logging.getLogger(__name__)
 
 with open('data/algorithm.p', 'rb') as fs:
     algorithm = pickle.load(fs)
@@ -9,8 +12,14 @@ with open('data/algorithm.p', 'rb') as fs:
 
 def predicted_shares(social_shares, content):
     initial_shares = get_social_share_count(social_shares)
-    features = get_complete_feature(initial_shares, content)
-    shares = get_predict_social_shares(features, initial_shares)
+    try:
+        features = get_complete_feature(initial_shares, content)
+        shares = get_predict_social_shares(features, initial_shares)
+    except Exception as e:
+        logger.exception('\nError predicting shares, content.id: %s. Exception: %s, %s',
+                         content.id, e.__class__.__name__, e)
+        logger.exception('using initial shares as predicted shares...')
+        shares = initial_shares
     return shares
 
 
@@ -21,9 +30,7 @@ def get_complete_feature(initial_shares, content):
 
 
 def get_social_share_count(social_shares):
-    return social_shares.facebook_shares + \
-           social_shares.retweets + \
-           social_shares.upvotes
+    return social_shares.facebook_shares + social_shares.retweets + social_shares.upvotes
 
 
 def format_feature(feature_extraction, social_shares):
@@ -38,7 +45,6 @@ def scale_feature(features):
 
 
 def get_predict_social_shares(features, initial_shares):
-    shares = 0
     shares = algorithm.predict(features)[0]
     if shares < 0:
         shares *= -1
