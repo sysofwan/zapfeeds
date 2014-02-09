@@ -9,8 +9,6 @@ from nltk.stem.porter import PorterStemmer
 from scipy.cluster.hierarchy import linkage
 from app.models.Content import Content
 
-
-
 #lemmatizer = WordNetLemmatizer()
 stemmer = PorterStemmer()
 
@@ -87,28 +85,28 @@ def freq(word, document):
     return document.count(word)
 
 
-def wordCount(document):
+def word_count(document):
     return len(document)
 
 
-def numDocsContaining(word, documentList):
+def num_docs_containing(word, document_list):
     count = 0
-    for document in documentList:
+    for document in document_list:
         if freq(word, document) > 0:
             count += 1
     return count
 
 
 def tf(word, document):
-    return (freq(word, document) / float(wordCount(document)))
+    return freq(word, document) / float(word_count(document))
 
 
-def idf(word, documentList):
-    return math.log(len(documentList) / numDocsContaining(word, documentList))
+def idf(word, document_list):
+    return math.log(len(document_list) / num_docs_containing(word, document_list))
 
 
-def tfidf(word, document, documentList):
-    return (tf(word, document) * idf(word, documentList))
+def tfidf(word, document, document_list):
+    return tf(word, document) * idf(word, document_list)
 
 
 #==============================================================================
@@ -162,10 +160,10 @@ def create_matrix(n, feature_vec):
 #================================extract cluster===============================
 #==============================================================================
 
-def extract_clusters(Z, threshold, n):
+def extract_clusters(z, threshold, n):
     clusters = {}
     ct = n
-    for row in Z:
+    for row in z:
         if row[2] < threshold:
             n1 = int(row[0])
             n2 = int(row[1])
@@ -249,8 +247,8 @@ def cluster(data_list, threshold=0.9, n_keywords=5):
 
     feature_vec = feature_vector(corpus, key_word_list)
     matrix = create_matrix(len(corpus), feature_vec)
-    Z = linkage(matrix)
-    clusters_dict = extract_clusters(Z, threshold, len(corpus))
+    z = linkage(matrix)
+    clusters_dict = extract_clusters(z, threshold, len(corpus))
     keyword_id_dict = keyword_cluster(clusters_dict, key_word_list, feature_vec)
 
     total_seconds = time.time() - time_start
@@ -265,26 +263,9 @@ def cluster(data_list, threshold=0.9, n_keywords=5):
         clusters[key] = clusters_temp
 
     print '\n\n=========== stats ===========\n'
-    print 'data count: ', len(data)
+    print 'data count: ', len(data_list)
     print 'threshold: ', threshold
     print 'number of keywords: ', n_keywords
     print 'total running time: ', total_seconds
 
-    return clusters
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return clusters, keyword_id_dict, z
