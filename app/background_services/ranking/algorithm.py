@@ -972,15 +972,16 @@ def get_anchor(soup_data):
     a_tags = []
     #find a tags in p tags
     try:
-        p_tags = soup_data.find_all('p')
-        for p in p_tags:
-            if p:
-                temp_tag = p.find_all('a')
-                if temp_tag:
-                    a_tags += temp_tag
+        if soup_data:
+            p_tags = soup_data.find_all('p')
+            for p in p_tags:
+                if p:
+                    temp_tag = p.find_all('a')
+                    if temp_tag:
+                        a_tags += temp_tag
     except Exception as e:
-        logger.exception('\nError extracting html tags from soup. Exception: %s, %s',
-                         e.__class__.__name__, e)
+        #logger.exception('\nError extracting html tags from soup. Exception: %s, %s',
+        #                 e.__class__.__name__, e)
         pass
     return a_tags
 

@@ -70,7 +70,7 @@ def get_primary_content_data(rss_url, source_id, session):
 
             except Exception as e:
                 content = None
-                logger.exception('Error parsing content with feed link: %s. RSS url: %s. Exception: %s, %s',
+                logger.exception('\nError parsing content with feed link: %s. RSS url: %s. Exception: %s, %s',
                                  feed.link, rss_url, e.__class__.__name__, e)
 
             if content:
@@ -222,7 +222,7 @@ def auto_tagger(content_data):
     try:
         tags = auto_tag(text, 3)
     except Exception as e:
-        logger.error('Error auto tagging data content id: %s. Exception: %s, %s',
+        logger.error('\nError auto tagging data content id: %s. Exception: %s, %s',
                      content_data.id, e.__class__.__name__, e)
         return []
     return clean_tags([str(tag) for tag in tags])
@@ -234,8 +234,8 @@ def extract_article(html_text):
         text_string = extractor.getText()
         text_string = htmlParser.unescape(text_string)
     except Exception as e:
-        logger.error('Error extracting article html: %s  \nException: %s, %s',
-                     html_text, e.__class__.__name__, e)
+        logger.error('\nError extracting article html: %s  Exception: %s, %s',
+                     e.__class__.__name__, e)
         text_string = ''
     return text_string
 
