@@ -15,7 +15,7 @@ from app.background_services import reqSession
 import logging
 from app.background_services.ranking.feature_extraction import Extract
 from urlparse import urljoin
-from requests import ConnectionError
+from requests import ConnectionError, TooManyRedirects
 import langid
 
 
@@ -68,7 +68,7 @@ def get_primary_content_data(rss_url, source_id, session):
             try:
                 content = get_content_from_feed(feed, source_id, session)
 
-            except (KeyError, ConnectionError):
+            except (KeyError, ConnectionError, AttributeError, TooManyRedirects):
                 if 'newsvine' in rss_url or 'reddit' in rss_url:
                     #   common cases
                     pass
