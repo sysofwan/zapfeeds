@@ -860,6 +860,8 @@ def get_html_feature(content_id=0, content_data='', html_data=''):
     status: required
     @param content_data: BeautifulSoup object
     @param html_data: html string
+    
+    @TODO: image, video, etc..
     """
     html_dict = {}
     soup = ''

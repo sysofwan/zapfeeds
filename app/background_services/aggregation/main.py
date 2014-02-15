@@ -4,8 +4,8 @@ from datetime import datetime
 from time import mktime
 
 from app.models.Content import Content, Tag, SiteName, ContentType
-from util import join_root_with_domain, get_og_property, get_meta_property, \
-    get_twitter_property, clean_html, htmlParser
+from util import get_og_property, get_meta_property, \
+    get_twitter_property, clean_html, htmlParser, is_valid_url
 from app.background_services.aggregation.custom_url import get_raw_url
 import feedparser
 from bs4 import BeautifulSoup
@@ -14,7 +14,10 @@ from boilerpipe.extract import Extractor
 from app.background_services import reqSession
 import logging
 from app.background_services.ranking.feature_extraction import Extract
+from urlparse import urljoin
+from requests import ConnectionError, TooManyRedirects
 import langid
+
 
 
 logger = logging.getLogger(__name__)
@@ -23,9 +26,6 @@ auto_tag = Tagger(Reader(), Stemmer(), Rater(weights))
 
 
 class ContentData():
-    """
-    @TODO: check requests status code 200
-    """
 
     def __init__(self, raw_url, feed):
         self.raw_url = raw_url
@@ -37,7 +37,7 @@ class ContentData():
         self.title = get_title(self.soup, self.feed)
         self.description = get_description(self.soup, self.feed)
         self.timestamp = get_timestamp(self.feed)
-        self.image_url = get_image_url(self.soup)
+        self.image_url = get_image_url(self.soup, self.url)
         self.icon_url = get_icon_url(self.soup, self.url)
         self.type = get_type(self.url, self.soup)
         self.raw_html = self.page_req.text
@@ -67,11 +67,17 @@ def get_primary_content_data(rss_url, source_id, session):
         if not is_duplicate_content(feed):
             try:
                 content = get_content_from_feed(feed, source_id, session)
+            except (KeyError, ConnectionError, AttributeError, TooManyRedirects):
+                if 'newsvine' in rss_url or 'reddit' in rss_url:
+                    #   common cases
+                    pass
+                else:
+                    logger.exception('Error parsing content with feed link: %s. RSS url: %s.', feed.link, rss_url)
+                continue
+            except Exception:
+                logger.exception('Error parsing content with feed link: %s. RSS url: %s.', feed.link, rss_url)
+                continue
 
-            except Exception as e:
-                content = None
-                logger.exception('\nError parsing content with feed link: %s. RSS url: %s. Exception: %s, %s',
-                                 feed.link, rss_url, e.__class__.__name__, e)
 
             if content:
                 session.add(content)
@@ -140,9 +146,8 @@ def get_feed_id(feed):
 
 def get_url(page_request, soup):
     url = get_og_property(soup, 'url')
-    if not url or not url.startswith('http'):
-        # throw out trailing id
-        url = page_request.url.split('#')[0]
+    if not url or not is_valid_url(url):
+        url = page_request.url
     return url
 
 
@@ -172,13 +177,13 @@ def get_description(soup, feed):
     return clean_html(feed.description)
 
 
-def get_image_url(soup):
+def get_image_url(soup, url):
     og_image = get_og_property(soup, 'image')
     if og_image:
-        return og_image
+        return urljoin(url, og_image)
     tw_image = get_twitter_property(soup, 'image')
     if tw_image:
-        return tw_image
+        return urljoin(url, tw_image)
 
 
 def get_icon_url(soup, url):
@@ -233,9 +238,8 @@ def extract_article(html_text):
         extractor = Extractor(extractor='ArticleExtractor', html=html_text)
         text_string = extractor.getText()
         text_string = htmlParser.unescape(text_string)
-    except Exception as e:
-        logger.error('\nError extracting article html: %s  Exception: %s, %s',
-                     e.__class__.__name__, e)
+    except Exception:
+        logger.error('Error extracting article html')
         text_string = ''
     return text_string
 
@@ -277,8 +281,4 @@ def get_icon_url_from_node(icon_node, url):
     icon_url = '/favicon.ico'
     if icon_node and icon_node.get('href'):
         icon_url = icon_node.get('href')
-    if icon_url.startswith('..'):
-        icon_url = icon_url[2:]
-    if icon_url[0] == '/' and icon_url[1] != '/':
-        icon_url = join_root_with_domain(url, icon_url)
-    return icon_url
+    return urljoin(url, icon_url)
