@@ -8,6 +8,7 @@ from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from scipy.cluster.hierarchy import linkage
 from app.models.Content import Content
+from datetime import timedelta
 
 #lemmatizer = WordNetLemmatizer()
 stemmer = PorterStemmer()
@@ -72,7 +73,6 @@ def populate_data(data_list):
                       word not in stopwords.words('english')]
         corpus.append(words_list)
         titles.append(title)
-        print 'Title: ', title
 
     return titles, corpus
 
@@ -230,14 +230,14 @@ def keyword_cluster(cluster_dict, key_word_list, feature_vec):
 #==============================================================================
 
 
-def cluster(data_list, threshold=0.9, n_keywords=5):
+def cluster_news(data_list, threshold=0.9, train=False):
     """
     data_list: <id>, <title>, <description>
-    returns: clusters with keyword:[<id1>,<id2>,...,<idn>]
+    returns: clusters [[<id1>,<id2>,...,<idn>]...]
     """
-    time_start = time.time()
-
+    start_time = time.time()
     clusters = {}
+    n_keywords = choose_number_of_keywords(len(data_list))
     titles, corpus = populate_data([data[1:] for data in data_list])
     key_word_list = set()
 
@@ -251,7 +251,7 @@ def cluster(data_list, threshold=0.9, n_keywords=5):
     clusters_dict = extract_clusters(z, threshold, len(corpus))
     keyword_id_dict = keyword_cluster(clusters_dict, key_word_list, feature_vec)
 
-    total_seconds = time.time() - time_start
+    end_time = time.time()
 
     for key in keyword_id_dict:
         print '==============================='
@@ -262,10 +262,59 @@ def cluster(data_list, threshold=0.9, n_keywords=5):
             print 'ID: ', data_list[link_id][0], ' Title: ', data_list[link_id][1]
         clusters[key] = clusters_temp
 
-    print '\n\n=========== stats ===========\n'
-    print 'data count: ', len(data_list)
-    print 'threshold: ', threshold
-    print 'number of keywords: ', n_keywords
-    print 'total running time: ', total_seconds
+    if train:
+        print '\n=========== stats ===========\n'
+        print 'data count: ', len(data_list)
+        print 'threshold: ', threshold
+        print 'number of keywords: ', n_keywords
+        print 'total running time: ', str(timedelta(seconds=end_time - start_time)), '\n'
 
-    return clusters, keyword_id_dict, z
+    return [clusters[keyword] for keyword in clusters]
+
+
+def choose_number_of_keywords(num_of_data):
+    if num_of_data <= 500:
+        return 3
+    else:
+        return 2
+
+
+def update_parent_cluster(clusters, contents, session):
+    """
+    """
+    id_cluster = format_cluster(clusters)
+    content_ids = [row[0] for row in contents]
+    for content_id in content_ids:
+        content = Content.get_content_by_id(content_id)
+        if not content.parent_cluster:
+            content.parent_cluster = id_cluster[content_id] if content_id in id_cluster else 0
+            session.add(content)
+        else:
+            #update contents previously clustered
+            if content_id in id_cluster:
+                clustered_contents = Content.get_content_by_parent_cluster(content.parent_cluster)
+                for clustered_content in clustered_contents:
+                    clustered_content.parent_cluster = id_cluster[content_id]
+                    session.add(clustered_content)
+    session.commit()
+
+
+def format_cluster(clusters):
+    """
+    @todo: improve selection of parent cluster (currently using smalled id)
+            - 2 factors: freshness and rank of the content
+    """
+    id_dict = {}
+    for cluster in clusters:
+        parent_cluster = min(cluster)
+        for elt in cluster:
+            id_dict[elt] = parent_cluster
+    return id_dict
+
+
+
+
+
+
+
+
