@@ -34,6 +34,7 @@ class Content(db.Model):
     site_name_id = db.Column(db.Integer, db.ForeignKey('site_names.id'), index=True)
     content_source_id = db.Column(db.Integer, db.ForeignKey('content_sources.id'), index=True)
     feature_extraction = db.Column(db.String())
+    parent_cluster = db.Column(db.Integer)
 
     social_shares = db.relationship('SocialShare', backref='content')
 
@@ -228,7 +229,57 @@ class Content(db.Model):
             pass
         return raw_html
 
+    @staticmethod
+    def ids_from_content_list(content_obj_list):
+        return [content.id for content in content_obj_list]
 
+    @classmethod
+    def get_id_title_description(cls, content_id_list):
+        data = []
+        for content_id in content_id_list:
+            content = cls.get_content_by_id(content_id)
+            data.append([content.id, content.title, content.description])
+        return data
+
+
+    @classmethod
+    def get_content_for_clustering(cls):
+        """
+        @todo: include pre existing clusters + top ranked news
+        """
+        #<==================  HACK!!! ====================>
+        #non_clustered_content = cls.query.filter(cls.parent_cluster == None)
+        #non_clustered_content_id = cls.ids_from_content_list(non_clustered_content)
+
+        non_cluster = cls.none_parent_cluster()
+        num_clustered = cls.get_num_clustered(len(non_cluster))
+        clustered = cls.top_n_contents(num_clustered)
+        to_cluster = non_cluster[:] + clustered[:]
+        to_cluster_id = cls.ids_from_content_list(to_cluster)
+        return cls.get_id_title_description(to_cluster_id)
+
+
+    @classmethod
+    def get_content_by_parent_cluster(cls, parent_cluster):
+        return cls.query.filter(cls.parent_cluster == parent_cluster)
+
+
+    @classmethod
+    def top_n_contents(cls, n):
+        return cls.query.filter(
+            and_(datetime.utcnow() - cls.timestamp <= timedelta(hours=3), cls.rank != None))\
+            .order_by(cls.rank.desc())[:n]
+
+    @classmethod
+    def none_parent_cluster(cls):
+        return cls.query.filter(cls.parent_cluster == None)[:]
+
+    @staticmethod
+    def get_num_clustered(num_non_cluster):
+        if num_non_cluster <= 500:
+            return 500 - num_non_cluster
+        else:
+            return 100
 
 
 
