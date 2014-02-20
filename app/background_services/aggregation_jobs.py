@@ -9,6 +9,7 @@ from app.models.Content import Content
 from app.background_services.ranking.social_data import get_social_share, get_total_shares
 from app import db
 from app.background_services.ranking.rank import rank_content
+from app.background_services.ranking.cluster import cluster_news, update_parent_cluster
 
 session = db.session
 logger = logging.getLogger(__name__)
@@ -16,9 +17,12 @@ logger = logging.getLogger(__name__)
 
 def update_contents():
     aggregate_content()
+    #discussion on how to display the clusters
+    cluster_content()
     populate_social_count()
     rank_contents()
     populate_real_shares()
+    #update 'scoreboard'
 
 
 def aggregate_content():
@@ -28,6 +32,27 @@ def aggregate_content():
     for source in sources:
         get_primary_content_data(source.url, source.id, session)
     logger.info('content aggregation completed in %s', str(timedelta(seconds=time.time() - start_time)))
+
+
+def cluster_content():
+    """
+    @processes:
+    1.get data: new content + top n contents
+    2.cluster
+    3.determine parent cluster
+    4.update parent cluster
+    5.store results
+
+    @todo:
+    1.use better feature vectorizer (word2vec?)
+    2.display the cluster
+    """
+    logger.info('starting clustering sequence...')
+    start_time = time.time()
+    contents = Content.get_content_for_clustering()
+    clusters = cluster_news(contents, train=True)
+    update_parent_cluster(clusters, contents, session)
+    logger.info('clustering completed in %s', str(timedelta(seconds=time.time() - start_time)))
 
 
 def populate_social_count():
@@ -76,9 +101,13 @@ def rank_contents():
     logger.info('ranking completed in %s', str(timedelta(seconds=time.time() - start_time)))
 
 
-
-
-
+def update_aggregated_data():
+    """
+    1.data w/ real_shares:
+    2.extract data:
+    3.update:
+    """
+    pass
 
 
 
